@@ -460,7 +460,7 @@ function mountDiscover(){
 /* ================= Step 4: Apply ================= */
 function renderOffer(){
   const cards = OFFERS.map((o, i) => `
-    <article class="offer${i === 0 ? ' feat' : ''}" data-offer="${o.id}" tabindex="0" role="button" aria-label="${esc(o.t)}">
+    <article class="offer" data-offer="${o.id}" tabindex="0" role="button" aria-label="${esc(o.t)}">
       <div class="o-top"><span>${esc(o.out)}</span>${status(CONFIG.status[o.id])}</div>
       <strong>${esc(o.t)}</strong>
       <span class="o-d">${esc(o.d)}</span>

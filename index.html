@@ -342,11 +342,7 @@ function renderEnrich(){
       <div class="relbox"><h3>Relationships</h3><p class="fine" style="margin:0">Select one to see where it comes from.</p>${rels}</div>
     </aside>
   </div>
-  <div class="reads">Everything that follows reads from this layer:
-    <button class="pill" data-goto="derive">Keywords and abstracts</button>
-    <button class="pill" data-goto="discover">Search and related work</button>
-    <button class="pill" data-goto="offer">Products</button>
-  </div>`;
+`;
 }
 function inspectorHTML(){
   if (!S.enriched) return '<p class="muted">Run enrichment to see what the text contains.</p>';

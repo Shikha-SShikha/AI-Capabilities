@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TNQ Beacon · Content intelligence demo</title>
+<link rel="preconnect" href="https://beacon-scmy.onrender.com">
+<style>
+:root{--bg:#f5f6f8;--fg:#121821;--muted:#5d6675;--card:#ffffff;--line:#e1e5ec;--accent:#1f5fd0;--accent-soft:#e8f0fd;--ok:#1d7a4a;--ok-soft:#e6f5ec;--warn:#945700;--warn-soft:#fff1d1;--bad:#b3261e;--bad-soft:#fde8e6;--org-bg:#e6f5ec;--org-fg:#1d7a4a;--cell-bg:#e8f0fd;--cell-fg:#1a54b8;--gene-bg:#f3ecfc;--gene-fg:#6a3fbf;--mod-bg:#fff0d1;--mod-fg:#945700}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;color:inherit}
+header{padding:12px 16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand-logo{height:56px;width:auto;display:block}
+.tnq-logo{height:44px;width:auto;display:block;background:#0b1f3a;border-radius:10px;padding:8px 14px;box-sizing:content-box}
+.hbtn{border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.hbtn:hover{color:var(--fg)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin:10px 0 0;padding:0 16px}
+.steps button{text-align:left;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.steps button small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.steps button[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft)}
+main{padding:14px 16px 16px}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;height:calc(100vh - 128px);min-height:440px;overflow:auto;display:flex;flex-direction:column}
+.stage>*{flex-shrink:0}
+.stage .frame{flex:1;min-height:0;display:flex;flex-direction:column}
+.stage .frame iframe{flex:1;height:auto;min-height:0}
+.frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.frame iframe{display:block;width:100%;height:100%;border:0}
+.frame iframe[hidden]{display:none}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px}
+h3{margin:0 0 4px;font-size:14px;font-weight:600}
+.h-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lead{color:var(--muted);margin:0 0 18px;max-width:64ch}
+.problem{border-left:3px solid var(--accent);padding:2px 0 2px 12px;margin:6px 0 20px;color:var(--muted);max-width:70ch}
+.problem b{color:var(--fg);font-weight:600}
+.muted{color:var(--muted)}
+.fine{font-size:13px;color:var(--muted);margin:10px 0 0}
+.fine a,.link-btn{color:var(--accent)}
+.link-btn{background:none;border:0;padding:0;cursor:pointer;font-size:14px;text-decoration:underline}
+.status{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.s-live{color:var(--ok);border-color:var(--ok)}
+.s-prototype{color:var(--accent);border-color:var(--accent)}
+.s-concept{color:var(--warn);border-color:var(--warn)}
+.s-sample{border-style:dashed}
+.btn{padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn[aria-pressed="true"]{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.pick{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.pill[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.pill.ghost{border-style:dashed;color:var(--muted)}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+
+/* Enrich */
+.enrich{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:20px}
+@media (max-width:820px){.enrich,.derive{grid-template-columns:1fr}}
+.passage{font:18px/1.8 Charter,"Iowan Old Style","Palatino Linotype",Georgia,serif;border:1px solid var(--line);border-radius:12px;padding:24px 28px;background:var(--bg);max-width:80ch;min-height:300px}
+.sent{border-radius:6px;transition:background .2s}
+.sent.hi{background:color-mix(in srgb,var(--accent) 20%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent)}
+.ctx{display:none;font:600 12px/1 system-ui,sans-serif}
+.enrich.on.l-ctx .ctx{display:inline-block;margin-right:8px;padding:4px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);vertical-align:2px}
+.ent{border-radius:5px;padding:1px 3px;margin:0 -1px;transition:background .5s,color .5s,box-shadow .2s}
+.enrich.on.l-ent .ent{cursor:pointer}
+.enrich.on.l-ent .t-org{background:var(--org-bg);color:var(--org-fg)}
+.enrich.on.l-ent .t-cell{background:var(--cell-bg);color:var(--cell-fg)}
+.enrich.on.l-ent .t-gene{background:var(--gene-bg);color:var(--gene-fg)}
+.enrich.on.l-ent .t-mod{background:var(--mod-bg);color:var(--mod-fg)}
+.enrich.on.l-ent .ent.sel{box-shadow:0 0 0 2px currentColor}
+.insp{border:1px solid var(--line);border-radius:12px;padding:16px;align-self:start;background:var(--bg)}
+.chipt{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;margin-bottom:6px}
+.chipt.t-org{background:var(--org-bg);color:var(--org-fg)}.chipt.t-cell{background:var(--cell-bg);color:var(--cell-fg)}.chipt.t-gene{background:var(--gene-bg);color:var(--gene-fg)}.chipt.t-mod{background:var(--mod-bg);color:var(--mod-fg)}
+.insp p{margin:4px 0}
+.relbox{display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.enrich.on.l-rel .relbox{display:block}
+.rel{display:block;width:100%;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;margin-top:6px;font-size:14px}
+.rel b{color:var(--accent);font-weight:600}
+.rel[aria-pressed="true"]{border-color:var(--accent)}
+.reads{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px}
+
+/* Derive */
+.derive{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.8fr);gap:24px;margin-top:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+.kw{padding:4px 11px;border-radius:99px;border:1px solid var(--line);background:var(--accent-soft);color:var(--accent);cursor:pointer;font-size:14px}
+.kw[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ev{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);font-size:14px;margin-bottom:14px}
+.ev p{margin:4px 0 0}
+mark.k{background:#ffe58a;color:#121821;border-radius:3px;padding:0 2px}
+.terms{margin:4px 0 0;padding-left:18px;font-size:14px}
+.paper{font-size:14px;color:var(--muted);margin:0 0 6px}
+.paper strong{color:var(--fg)}
+.sec{border-top:1px solid var(--line);padding:12px 0}
+.sec:first-of-type{border-top:0;padding-top:4px}
+.sec h3{color:var(--accent);text-transform:capitalize}
+.sec p{margin:0;max-width:70ch}
+.qa{font-size:14px;margin-top:10px;padding:8px 12px;border-radius:8px}
+.qa.ok{background:var(--ok-soft);color:var(--ok)}
+.qa.warn{background:var(--warn-soft);color:var(--warn)}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+
+/* Offer */
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.offer{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--bg);display:flex;flex-direction:column;gap:8px}
+.offer.feat{border-color:var(--accent)}
+.o-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--accent)}
+.offer strong{font-size:17px}
+.o-d{color:var(--muted);font-size:14px}
+.needs{display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.needs span.l{padding:2px 8px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.legend{margin-top:16px;font-size:13px;color:var(--muted)}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(10,14,20,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+#modal.on{display:flex}
+.sheet.wide{width:min(1200px,100%);max-height:97vh}
+.sheet.wide .agframe{height:80vh}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;width:min(780px,100%);max-height:92vh;overflow:auto;position:relative}
+.sheet h2{margin:4px 0 4px;font-size:24px}
+.sheet .x{position:absolute;right:14px;top:10px;border:0;background:none;font-size:26px;color:var(--muted);cursor:pointer}
+.aud{font-size:13px;color:var(--accent)}
+.constructed{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:13px;margin:10px 0}
+.srcs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+@media (max-width:700px){.srcs{grid-template-columns:1fr}}
+.srcc{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);font-size:14px}
+.srcc p{margin:6px 0 0}
+mark.v{background:#ffe58a;color:#121821;border-radius:3px;padding:0 3px}
+mark.bad{background:var(--bad-soft);color:var(--bad);border-radius:3px;padding:0 3px;font-weight:600}
+.flagbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px 14px;font-size:14px;margin:12px 0}
+.flagbox.dim{border-color:var(--line);background:var(--bg);color:var(--muted)}
+.draft{border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:14px;background:var(--bg)}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{text-align:left;color:var(--muted);font-weight:500;font-size:13px;padding:6px 8px}
+.tbl td{padding:4px 8px}
+.cellbtn{width:100%;text-align:left;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.cellbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.xinsp{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);font-size:14px;min-height:96px}
+.xinsp dl{margin:6px 0 0;display:grid;grid-template-columns:90px 1fr;gap:4px 10px}
+.xinsp dt{color:var(--muted)}.xinsp dd{margin:0}
+pre.json{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:300px;overflow:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;margin:10px 0 0}
+.mfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* Notes */
+#notes{position:fixed;right:16px;bottom:72px;width:min(380px,calc(100% - 32px));background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);display:none;z-index:5;font-size:14px}
+#notes.on{display:block}
+#notes p{margin:6px 0 0}
+#notes b{color:var(--accent);font-weight:600}
+
+.nav{display:flex;justify-content:space-between;margin-top:10px;padding:0 16px}
+.nav button{padding:10px 18px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.nav button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.nav button:disabled{opacity:.4;cursor:default}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.xnote{color:var(--muted);font-size:13px;margin:8px 0 0}
+.agframe{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;height:min(640px,70vh)}
+.agframe iframe{display:block;width:100%;height:100%;border:0}
+.sgroups{display:grid;gap:8px;margin-top:12px}
+.sg{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--bg)}
+.sg summary{cursor:pointer;font-weight:600}
+.sg ul{margin:8px 0 2px;padding-left:18px;font-size:14px;color:var(--muted)}
+
+.scan{display:grid;gap:10px;margin-top:14px}
+.sgrp{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 16px}
+.sgrp > summary{cursor:pointer;font-weight:600;padding:12px 0;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.sgrp > summary::-webkit-details-marker{display:none}
+.sgrp > summary::after{content:"+";color:var(--muted);font-weight:400;font-size:18px}
+.sgrp[open] > summary::after{content:"−"}
+.cnt{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+.spap{border-top:1px solid var(--line);padding:12px 0}
+.spap h4{margin:0 0 4px;font-size:15px;line-height:1.35}
+.spap .who{color:var(--accent)}
+.hook{margin:0 0 8px;font-size:14px;font-weight:500}
+.spap dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:13px}
+.spap dt{color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.5px;padding-top:2px}
+.spap dd{margin:0;color:var(--fg)}
+.flag{margin:8px 0 0;font-size:12px;color:var(--muted);font-style:italic}
+.patterns{margin-top:12px}
+.pat{padding:10px 0;border-top:1px solid var(--line)}
+.pat b{font-size:13px}
+.pat p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+
+header{transition:background .2s}
+.hright{display:flex;align-items:center;gap:14px}
+.brand-logo{height:56px;width:auto;display:block}
+.abs-title{margin:14px 0 2px;font-size:18px}
+.muted-line{color:var(--muted);font-size:13px;margin:0 0 10px}
+</style></head><body>
+<header>
+  <img class="brand-logo" src="beacon-logo.svg" alt="Beacon">
+  <div class="hright">
+    <img class="tnq-logo" src="TNQTech-Logo.svg" alt="TNQ Tech">
+  </div>
+</header>
+
+<nav class="steps" id="steps" aria-label="Demo steps"></nav>
+
+<main>
+  <div class="stage" id="stage"></div>
+  <div class="nav">
+    <button id="prev">Back</button>
+    <button id="next" class="primary">Next</button>
+  </div>
+</main>
+<aside id="notes" aria-label="Presenter notes"></aside>
+<div id="modal"></div>
+
+<script>
+const ITEMS = [{"subject": "Biomedical", "field": "Cell biology · Parasitology", "title": "Defining epitranscriptomic hallmarks at the host-parasite interface and their roles in virulence and disease progression in Theileria annulata -infected leukocytes.", "doi": "10.1016/j.bj.2025.100828", "venue": "", "sa": {"background": "Theileria parasites, particularly T. annulata, induce significant transformations in host bovine leukocytes, leading to rapid proliferation and evasion of apoptosis. However, the role of m6A RNA modifications in these processes remains underexplored.", "objective": "This study aims to elucidate the influence of m6A RNA modifications on the transformation of bovine leukocytes infected with T. annulata and their implications for virulence and disease progression.", "method": "The research employed m6A sequencing and bioinformatics analysis to map mRNA methylation patterns in T. annulata-infected leukocytes. RNA was extracted from various infected and non-infected bovine cell lines, and m6A levels were quantified using ELISA and MeRIP-seq. The effects of METTL3 overexpression on cell proliferation and gene expression were assessed through qPCR, western blotting, and flow cytometry. Additionally, the role of HIF-1α in regulating m6A modifications was investigated using pharmacological inhibition.", "results": "The study found that m6A levels were significantly elevated in T. annulata-infected leukocytes, particularly in virulent macrophages compared to non-infected controls. Overexpression of METTL3 led to decreased proliferation rates in infected leukocytes, with a notable increase in m6A levels correlating with enhanced expression of E2F4 mRNA. Furthermore, HIF-1α was identified as a key regulator of m6A modifications, with its inhibition resulting in increased expression of m6A writers and readers, and a halt in cell proliferation. The findings suggest that m6A modifications may enhance the dissemination potential of infected macrophages.", "conclusions": "This research highlights the critical role of m6A RNA methylation in the host-parasite interaction dynamics during T. annulata infection, suggesting that m6A modifications influence cellular proliferation and may serve as potential therapeutic targets in managing the disease."}, "issues": ["method is 71 words, budget 80 to 105"]}, {"subject": "Humanities", "field": "History · Narrative", "title": "Fantasizing history between subjectivity and objectivity", "doi": "10.1080/23311983.2024.2335787", "venue": "", "sa": {"background": "The interplay between subjectivity and objectivity in historical writing has been a topic of limited exploration, despite its significance in understanding how narratives are constructed. Historians strive for objectivity, yet their work is inherently influenced by personal perspectives, leading to a complex relationship between factual recounting and imaginative interpretation.", "objective": "This study aims to explore the relationship between subjectivity and objectivity in historical narratives, focusing on how fantasizing can bridge these two domains.", "method": "The research employs a descriptive approach to analyze the mechanisms through which narrative and history intersect. It examines the roles of historians and narrators, investigating their convergence and divergence. The study also scrutinizes the concept of fantasizing as a lens to understand subjectivity in both historical and narrative contexts, addressing the challenges posed by their inherent contradictions.", "results": "The findings reveal that both historians and novelists operate within a framework of subjectivity, despite their differing methodologies. Historians are bound to factual accuracy, while novelists prioritize emotional engagement and stylistic expression. The study identifies a transformative process where historical facts are reimagined within narratives, creating a unique synthesis that enriches literary expression. This synthesis allows for a dialogue between history and narrative, resulting in texts that blend factual and imaginative elements, thus offering new interpretations of historical events and expanding the reader's understanding of both history and storytelling.", "conclusions": "The research underscores the potential for a productive relationship between history and narrative, suggesting that this interplay can lead to innovative literary creations. It highlights the importance of recognizing the subjective dimensions of historical writing, which can enhance our understanding of both disciplines."}, "issues": ["method is 57 words, budget 80 to 105"]}, {"subject": "Computing", "field": "Software engineering · Visualization", "title": "Diagram Size vs. Layout Flaws: Understanding Quality Factors of UML Diagrams", "doi": "", "venue": "ESEM '16, September 08 - 09, 2016, Ciudad Real, Spain", "sa": {"background": "The Unified Modeling Language (UML) is widely used in software engineering, but there is limited empirical evidence on how diagram size and layout quality affect understanding. Previous studies suggested that larger diagrams and poor layout quality reduce modeler performance, but questions about the validity and generalizability of these findings remain.", "objective": "The study aims to validate previous findings on diagram size and understanding, generalize results to more diagram types, and define diagram quality in terms of layout flaws.", "method": "The study redefines diagram size and introduces a metric for diagram quality based on topographic layout flaws. It analyzes 60 UML diagrams across five types, using a dataset from 156 participants. The diagrams were evaluated for size and quality, and these metrics were correlated with modeler performance data from previous experiments. The study ensures representativeness by analyzing the structure of diagram samples.", "results": "The study confirms previous findings that larger diagram sizes correlate with decreased model understanding. It introduces a refined definition of diagram size and a new metric for topographic layout quality, showing both to be objectively applicable. The impact of diagram size and quality on understanding is quantified, with a recommendation that diagrams should not exceed 50 elements and a flaw rate of 0.5. The study extends findings to two additional UML diagram types. Additionally, the study finds that diagram quality, as measured by layout flaws, has a more significant impact on understanding than size alone, suggesting a need for prioritizing quality improvements.", "conclusions": "The study confirms the overall results of previous research, refining recommendations for creating better UML diagrams. It suggests that reducing layout flaws should be prioritized over reducing diagram size to improve understanding. Future work should explore other aspects of diagram quality, such as flow and symmetry, which are less empirically studied."}, "issues": []}, {"subject": "Digital humanities", "field": "Musicology · Digital libraries", "title": "Collaborative Musicology: Designing a Digital Library of Musical Events Ephemera", "doi": "", "venue": "10th International Conference on Digital Libraries for Musicology (DLfM 2023), November 10, 2023, Milan, Italy", "sa": {"background": "Ephemeral musical sources, such as concert programmes, have been marginalized in musicological research despite their potential to enrich understanding of musical culture. These documents provide structured records of performances and reflect local and broader cultural trends.", "objective": "The paper aims to design a Digital Library for musical events ephemera, integrating diverse document types to facilitate collaborative musicological research.", "method": "The authors developed a prototype Digital Library using Greenstone3, Mirador Annotation Viewer, and SimpleAnnotationServer. They incorporated metadata-rich collections of concert programmes, season brochures, and other documents, employing OCR and linked data to enhance accessibility and interactivity. The system supports annotations and integrates with external resources, allowing for comprehensive data exploration. The library includes features for searching, browsing, and user comments, and uses a combination of high-resolution and DIY digitization methods to accommodate various document types.", "results": "The prototype Digital Library contains 3,971 items, including 115 digitized documents with 5,268 pages, covering concerts from 1918 to 2020. It allows users to search, browse, and annotate documents, linking them to external resources like music scores and recordings. The system effectively manages heterogeneous content, supports collaborative research by enabling user-generated annotations and comments, and provides enhanced search capabilities through OCR and linked data. The integration of Greenstone3, Mirador, and SimpleAnnotationServer allows for dynamic interaction with the content, making the library a versatile tool for musicological inquiry.", "conclusions": "The project demonstrates the feasibility of creating a collaborative Digital Library for musical ephemera, highlighting the potential for enhanced musicological research. Future work includes refining the system's architecture and expanding its capabilities to handle more complex semantic information and user interactions. The approach can be generalized to other cultural and community archives, offering a model for digitizing and making accessible diverse historical materials."}, "issues": []}];
+
+/* ------------------------------------------------------------------
+   CONFIG: edit this block, not the code below.
+   Only put statements here that you can stand behind in front of a client.
+------------------------------------------------------------------- */
+const CONFIG = {
+  beaconUrl: 'https://beacon-scmy.onrender.com/',
+  portalUrl: 'portal.html',               // must sit in the same folder as index.html
+  enrichNote: 'Passage from the Biomedical sample paper. The tags are an illustrative sample assembled for this demo; live Beacon output is in step 3.',
+  dataHandling: '',                        // e.g. where content is processed, whether it is retained, whether it trains models. Leave empty to hide the line (shown in step 4).
+  // live = running on real content today; prototype = working on sample content; concept = interactive mock-up
+  status: { consistency: 'concept', explain: 'concept', evidence: 'concept', feed: 'concept' }
+};
+
+/* ---------- Illustrative enrichment sample (swap in real Beacon output here) ---------- */
+const TYPES = { org: 'Organism', cell: 'Cell type', gene: 'Gene or protein', mod: 'RNA modification' };
+const ENT = {
+  ta:     { t: 'org',  label: 'T. annulata', def: 'Protozoan parasite of cattle that infects white blood cells.' },
+  leuko:  { t: 'cell', label: 'Leukocytes', def: 'White blood cells. Here, bovine cells infected by the parasite.' },
+  macro:  { t: 'cell', label: 'Macrophages', def: 'Immune cells that engulf pathogens. A host cell type in this study.' },
+  m6a:    { t: 'mod',  label: 'm6A', def: 'N6-methyladenosine, a reversible chemical mark on RNA.' },
+  mettl3: { t: 'gene', label: 'METTL3', def: 'Enzyme that adds m6A marks to RNA (a "writer").' },
+  e2f4:   { t: 'gene', label: 'E2F4', def: 'Transcription factor involved in cell-cycle control.' },
+  hif:    { t: 'gene', label: 'HIF-1α', def: 'Oxygen-responsive transcription factor.' },
+  wr:     { t: 'gene', label: 'm6A writers and readers', def: 'Proteins that add (writers) or interpret (readers) m6A marks.' }
+};
+const SENT = [
+  { ctx: 'Observation', text: 'The study found that {{m6a|m6A}} levels were significantly elevated in {{ta|T. annulata}}-infected {{leuko|leukocytes}}, particularly in virulent {{macro|macrophages}} compared to non-infected controls.' },
+  { ctx: 'Overexpression experiment', text: 'Overexpression of {{mettl3|METTL3}} led to decreased proliferation rates in infected {{leuko|leukocytes}}, with a notable increase in {{m6a|m6A}} levels correlating with enhanced expression of {{e2f4|E2F4}} mRNA.' },
+  { ctx: 'Inhibition experiment', text: 'Furthermore, {{hif|HIF-1α}} was identified as a key regulator of {{m6a|m6A}} modifications, with its inhibition resulting in increased expression of {{wr|m6A writers and readers}}, and a halt in cell proliferation.' },
+  { ctx: 'Method', text: 'Infected {{leuko|leukocytes}} were compared with non-infected controls using {{m6a|m6A}} sequencing, and changes in {{wr|m6A writers and readers}} were measured by qPCR.' },
+  { ctx: 'Conclusion', text: 'Together, these results suggest that {{m6a|m6A}} modifications influence the proliferation of {{ta|T. annulata}}-infected {{leuko|leukocytes}} and may be a target for future treatments.' }
+];
+const REL = [
+  { s: 0, a: 'm6A levels', v: 'elevated in', b: 'infected leukocytes' },
+  { s: 1, a: 'METTL3 overexpression', v: 'decreases', b: 'infected-cell proliferation' },
+  { s: 1, a: 'm6A level', v: 'correlates with', b: 'E2F4 mRNA expression' },
+  { s: 2, a: 'HIF-1α', v: 'regulates', b: 'm6A modification' },
+  { s: 2, a: 'HIF-1α inhibition', v: 'increases', b: 'm6A writer and reader expression' },
+  { s: 4, a: 'm6A modifications', v: 'influence', b: 'proliferation of infected leukocytes' }
+];
+
+/* ---------- Derive: keywords must appear in the text (the UI shows the evidence) ---------- */
+const DERIVE = [
+  { kw: ['m6A', 'METTL3', 'HIF-1α', 'E2F4', 'T. annulata', 'bovine leukocytes', 'MeRIP-seq', 'virulence'],
+    terms: ['Life sciences › Molecular biology › RNA modification', 'Life sciences › Parasitology'] },
+  { kw: ['subjectivity', 'objectivity', 'fantasizing', 'narrative', 'historians', 'novelists'],
+    terms: ['Humanities › History › Historiography', 'Humanities › Literary studies › Narrative'] },
+  { kw: ['UML', 'diagram size', 'layout flaws', 'diagram quality', 'modeler performance'],
+    terms: ['Computing › Software engineering › Modelling', 'Computing › Comprehension of models'] },
+  { kw: ['concert programmes', 'Digital Library', 'OCR', 'linked data', 'annotations', 'Greenstone3', 'ephemera'],
+    terms: ['Humanities › Musicology', 'Information science › Digital libraries'] }
+];
+const LABELS = { 'Humanities': { method: 'approach', results: 'argument' } };
+const NOTE = { 'Humanities': 'A conceptual essay has no method or results in the empirical sense, so the headings adapt to approach and argument.' };
+
+/* ---------- Real outputs for step 4 (from Beacon and the session run) ---------- */
+const APPLY = {"graph": {"article": {"label": "Theileria annulata m6A study (BJ 2025)"}, "sections": [{"label": "Results 1", "ents": ["m6A", "BL20", "TBL20", "macrophages", "merozoites"]}, {"label": "Results 2", "ents": ["m6A", "METTL3", "Theileria", "TBL20", "leukocytes"]}, {"label": "Results 3", "ents": ["HIF-1α", "Theileria", "m6A", "E2F4", "macrophages"]}, {"label": "Discussion 1", "ents": ["Theileria", "TBL20", "BL20", "m6A", "mRNA"]}, {"label": "Results 4", "ents": ["m6A", "mRNA", "macrophages", "merozoites"]}, {"label": "Results 5", "ents": ["HIF-1α", "Theileria", "TBL20", "m6A"]}], "entities": [{"label": "m6A", "type": "CHEMICAL"}, {"label": "Theileria", "type": "ORGANISM"}, {"label": "TBL20", "type": "CELL_LINE"}, {"label": "METTL3", "type": "GENE"}, {"label": "mRNA", "type": "GENE"}, {"label": "BL20", "type": "CELL_LINE"}, {"label": "leukocytes", "type": "CELL_LINE"}, {"label": "HIF-1α", "type": "PROTEIN"}, {"label": "macrophages", "type": "CELL_LINE"}, {"label": "merozoites", "type": "CELL_LINE"}, {"label": "E2F4", "type": "GENE"}, {"label": "ADAM19", "type": "PROTEIN"}]}, "cites": {"refs_total": 56, "corpus_links": 0, "sample": [{"title": "Phylogeny and evolution of the piroplasms", "year": "1994", "authors": "Allsopp, M.T."}, {"title": "Tissue damage in cattle infected with Theileria annulata accompanied by metastasis of cyto", "year": "1999", "authors": "Forsyth, L.M."}, {"title": "Alteration of host cell phenotype by Theileria annulata and Theileria parva: mining for ma", "year": "2006", "authors": "Shiels, B."}, {"title": "Transformation of leukocytes by Theileria parva and T. annulata", "year": "1999", "authors": "Dobbelaere, D."}, {"title": "Survival of protozoan intracellular parasites in host cells", "year": "2004", "authors": "Leiriao, P."}, {"title": "Polysome profiling reveals translational control of gene expression in the human malaria p", "year": "2013", "authors": "Bunnik, E.M."}]}, "scannable": {"groups": [{"name": "ML for Health & Biology", "papers": [{"who": "Islam & Zhan", "title": "Black-Box Watermarking for Genomic Foundation Models", "hook": "Watermark a genomics AI model using just 2.4-8.8% poisoned training data, <1% accuracy loss.", "method": "Backdoor trigger (hash-based DNA sequence) + latent-alignment loss on DNABERT-2.", "novelty": "New — first watermarking method built for DNA's 4-letter alphabet/biological constraints.", "caveat": "not yet tested against removal attacks (fine-tuning, pruning).", "flag": ""}, {"who": "Sharif et al.", "title": "Hybrid Multi-Modal Learning for Extreme Long-Tail Fungi Classification", "hook": "100% species coverage across 509 fungi species (158:1 imbalance) — 67.6% better than the best conventional baseline.", "method": "New 14,200-image dataset + DINOv2 + prototypical networks + vision/text/metadata fusion.", "novelty": "Incremental method (authors' own words: \"integrates established techniques\"); the dataset is the real contribution.", "caveat": "authors flag no cost-sensitive loss for poisonous-vs-edible errors — a gap they call essential but leave unsolved.", "flag": ""}, {"who": "Ly et al.", "title": "Multi-Cohort Structural MRI-Based Alzheimer's Disease Staging", "hook": "MCI-vs-AD accuracy drops hard (AUROC 0.868→0.805) the moment you test on a held-out hospital's scanner — a realistic generalization check most papers skip.", "method": "3D CNN (ResNet+SE-attention) on 4 pooled cohorts (OASIS, ADNI, AIBL), MRI-only by design.", "novelty": "Not a new architecture — a deliberately clean, reproducible imaging-only baseline.", "caveat": "Grad-CAM interpretability validated qualitatively only, not quantitatively.", "flag": ""}, {"who": "Tasnim & Shi", "title": "SA-SegFormer (Skin Cancer Histopathology Segmentation)", "hook": "Reordering two existing attention modules (sequential, not parallel) buys +2.61% mIoU beyond either alone — and margin-error lands sub-millimeter (0.0084mm), relevant to actual surgery.", "method": "SegFormer backbone + sequential Spatial-Attention→Squeeze-Excitation + a new margin-clearance metric.", "novelty": "New architectural ordering + new clinical metric.", "caveat": "latency/complexity vs. lighter CNNs not measured; single-center data only.", "flag": ""}, {"who": "Madduri et al.", "title": "Unified Generative Modeling of Surgical Gestures and Phases", "hook": "One generative model handles 3 usually-separate tasks (gesture, phase, skill prediction) — and a \"faster/cheaper\" transfer variant loses only a few points vs. full fine-tuning while cutting training time 35%+.", "method": "Discrete diffusion model (D3PM) over gesture/phase tokens, transfer learning across tasks.", "novelty": "New — first generative (not just discriminative) approach unifying these 3 surgical tasks.", "caveat": "untested outside one benchmark (JIGSAWS); some transfer directions inconsistent.", "flag": ""}, {"who": "Bahrololloomi et al.", "title": "Automated Generation of Synthetic Medical Dialogues", "hook": "The metric that \"wins\" depends entirely on which one you trust — plain few-shot prompting (zero training cost) wins automatic metrics, while a fine-tuned model wins human ratings for coherence/professionalism.", "method": "LLM fine-tuned via DPO with 3 preference-pair strategies, compared to few-shot prompting.", "novelty": "Incremental (comparison study), but the metric-disagreement finding is genuinely useful.,", "caveat": "no clinical-expert validation of dialogue correctness; fine-tuning cost was 112.5 GPU-hours.", "flag": ""}]}, {"name": "Security, Risk & Privacy", "papers": [{"who": "Carney et al.", "title": "Field Devices Under Fire (Radionuclide Detector Security)", "hook": "Successfully tampered a real radiation-detection device via SSH to silently misreport \"Unknown\" instead of the correct isotope — no warning to the operator.", "method": "Live penetration test (OWASP ZAP + config-file exploit) on a commercial RIID device.", "novelty": "Incremental (applied assessment), but real working exploit on real hardware.", "caveat": "one device tested — may not generalize to other vendors.", "flag": ""}, {"who": "Lloyd & Xie", "title": "Risk Assessment of a Hypothetical Quantum Repeater Network", "hook": "The two highest-risk threats identified aren't quantum attacks at all — they're classical/physical ones (message rerouting, hardware theft), because they need far less attacker capability.", "method": "NIST SP 800-30 risk framework applied to a 3-node quantum network, no real deployment exists yet.", "novelty": "First application of this framework to this domain — not a new framework itself.", "caveat": "authors fixed \"likelihood of initiation\" to High for everything, which biases results upward.", "flag": ""}, {"who": "Hackman et al.", "title": "Privacy Concerns of AI-Based Surveillance Under FERPA", "hook": "Vendor safety claims are largely unverifiable — Bark retracted its \"prevented 16 school shootings\" claim; Gaggle's \"5,790 lives saved\" has no independent verification.", "method": "Legal/policy analysis of FERPA/PPRA/CIPA/COPPA against K-12 surveillance vendor disclosures — no technical assessment.", "novelty": "Legal-analytic framework proposal (\"FERPA 2.0\"), not empirical.", "caveat": "no empirical data on real student/child impact yet — the paper says so itself.", "flag": ""}, {"who": "Upadhyay et al.", "title": "Blockchain Network Deployment for Federated IoT Access Control", "hook": "Federating access control across devices adds only ~36.5ms overhead — the real cost is contract deployment (~2.13M gas), not the federation itself.", "method": "Raspberry Pi/ESP32 nodes + Ethereum smart contracts, tested three ways (on-chain, local, cross-node).", "novelty": "Incremental — combines known components into a fully measured hardware testbed.", "caveat": "no test of what happens as the network scales up.", "flag": ""}]}, {"name": "Systems, Infrastructure & Data", "papers": [{"who": "Gamess et al.", "title": "Exploring the Ethernet Capabilities of the Raspberry Pi 4B/5", "hook": "The Raspberry Pi 4B's link-aggregated network setup doesn't slow down — it collapses to 0 Mbps entirely, because its shared USB controller can't handle it. The Pi 5 scales cleanly to 6.5 Gbps instead.", "method": "iperf3/SockPerf benchmarking across onboard, USB2, and USB3 network links on both boards.", "novelty": "Incremental — hardware benchmark of a new board generation.", "caveat": "no application-level (real workload) testing yet, just raw throughput/latency. Directly relevant if you're also looking at the IoT paper above (Security section).", "flag": ""}, {"who": "Shadin et al.", "title": "Kernel-Aware Federated Learning with Multi-Teacher Distillation", "hook": "Embedding classic OS synchronization primitives (semaphores, deadlock-avoidance) directly into a federated-learning runtime pushes MNIST accuracy to 99.68% and CIFAR-10 up 8.93 points — with zero deadlocks under 20+ concurrent threads.", "method": "Multi-teacher knowledge distillation + Shapley feature weighting + OS-level concurrency primitives.", "novelty": "New — first FL framework to embed classical OS primitives into the training runtime itself.", "caveat": "Shapley computation adds 20-25% overhead per round; needs a shared public dataset, hard in regulated domains.", "flag": ""}, {"who": "Abusaqer et al.", "title": "Comparative Analysis of Boosting Algorithms and DistilBERT", "hook": "A gradient-boosting model ties a fine-tuned transformer on fake-news detection (99.84% vs. 99.95%) while training up to 92× faster.", "method": "6 boosting algorithms vs. fine-tuned DistilBERT across 4 text-classification tasks.", "novelty": "Incremental — systematic comparison, not a new method.", "caveat": "fake-news dataset is from 2016-17, may not reflect modern LLM-generated disinformation.", "flag": ""}, {"who": "Kulkarni", "title": "Predicting Broadband Customer Complaints Using Synthetic Data", "hook": "Synthetic data doesn't just substitute for scarce real data — augmenting with it actually matches the real-data baseline almost exactly (0.025% AUC gap).", "method": "8 synthetic-data generators (SMOTE, CTGAN, TVAE, etc.) tested across 12 classifiers on telecom complaint data.", "novelty": "Incremental — applies existing synthesis techniques to a new domain.", "caveat": "single telecom operator, single region — generalizability not discussed.", "flag": ""}, {"who": "Koneru & Powell", "title": "Visual Linguistics of Memorability", "hook": "You can predict which images people will remember using only auto-generated text captions — no image features at all — hitting 83.2% macro F1 at the word-cluster level.", "method": "BLIP captions → Doc2Vec/Word2Vec embeddings → clustering + classification on 60,000 images.", "novelty": "New — interpretable, caption-only alternative to black-box visual memorability models.", "caveat": "accuracy drops sharply (~30-35%) at finer-grained prediction; BLIP captions themselves can hallucinate.", "flag": ""}]}, {"name": "OSS Governance, Education & Practice", "papers": [{"who": "Lumbard, Afzali & Link", "title": "Before and After the Switch (OSS Relicensing)", "hook": "When 4 major OSS projects went proprietary (MongoDB, Kibana, Terraform, Confluent's Schema Registry), there was no mass exodus of contributors — just redistribution: ~75% of Kibana's core contributors dropped tiers while new core contributors emerged elsewhere.", "method": "Git-trace analysis of contributor activity before/after relicensing across 4 projects.", "novelty": "Extends a prior industry study (which found no financial impact) with contributor-level dynamics.", "caveat": "only 4 cases, no interview data on contributor motivation.", "flag": ""}, {"who": "Lumbard, Ahuja & Germonprez", "title": "Understanding Development Patterns in Corporate OSS", "hook": "Just 0.1-0.2% of merged pull requests (the \"extreme outliers\") account for up to 64% of all code added — including one single 3.9-million-line PR in Zephyr.", "method": "Trace analysis of 160,000+ PRs across gRPC, Kubernetes, Zephyr.", "novelty": "New empirical construct (\"episodic large-chunk development\") extending open superposition theory with large-scale data.", "caveat": "only 3 large projects studied — pattern may not generalize further.", "flag": "Same lead author as the paper above; read as a pair, not separately."}, {"who": "Doloc-Mihu et al.", "title": "A Qualitative Analysis of Critical Thinking Skills", "hook": "Contradicts a prior published study — where a generic critical-thinking test found inconclusive 3.9% gains, this domain-specific reflective analysis found strong, specific gains in communication (44% of responses) and adaptability.", "method": "Interpretive Phenomenological Analysis of 37 students' reflective writing from a client-project software course.", "novelty": "Incremental method, but the direct contradiction of prior null results is worth noting.", "caveat": "37 students, one institution, one semester.", "flag": ""}, {"who": "Farjad & Gandhi", "title": "Practice-Informed Pedagogy for Linux Security", "hook": "77% of interviewed IT professionals showed no daemon-specific security awareness at all — despite daemon security being a real, unaddressed gap in current cybersecurity curricula.", "method": "22 semi-structured interviews with IT professionals, thematic analysis.", "novelty": "First study (per authors) on stakeholder perceptions of daemon security for curriculum design.,", "caveat": "22 interviews at one university, 82% male sample.", "flag": ""}]}], "patterns": [{"id": "⟡A", "kind": "Gap", "title": "Interpretability validated only qualitatively, not quantitatively.", "text": "The MRI (Ly et al.) and fungi (Sharif et al.) papers both want interpretable output but stop short of a real validation of it — worth flagging together if trustworthy-AI-in-science is your interest."}, {"id": "⟡B", "kind": "Gap", "title": "Black-box distrust shows up even where nobody's studying it directly.", "text": "IT professionals explicitly distrust black-box security ML (Farjad & Gandhi); the medical-dialogue paper's own metrics disagree with each other in a way that looks like the same underlying trust problem (Bahrololloomi et al.); the FL paper's Shapley-weighting is essentially an attempt to make black-box FL more explainable (Shadin et al.). No paper cites the others, but it's the same open problem recurring three times."}, {"id": "⟡C", "kind": "Agreement", "title": "Synthetic data \"works,\" but the papers proving it don't fully trust their own metrics.", "text": "Kulkarni's synthetic broadband data and Bahrololloomi's synthetic medical dialogues both conclude synthetic data is a viable substitute — and both separately warn that the metrics used to show this can be misleading."}, {"id": "⟡D", "kind": "Disagreement", "title": "Three papers ask \"is this secure/private?\" with three incompatible evidence standards.", "text": "Real penetration test on real hardware (Carney et al.) vs. qualitative risk-framework scoring on a system that doesn't exist yet (Lloyd & Xie) vs. legal/policy analysis with no technical testing (Hackman et al.). Useful to know if you're trying to judge which \"security\" claim in this session carries the most weight."}, {"id": "⟡E", "kind": "Gap", "title": "Same hardware, unrelated purposes, one paper's finding is a caveat for the other.", "text": "Gamess et al.'s discovery that Raspberry Pi 4B's networking collapses under aggregated load is directly relevant to anyone deploying Upadhyay et al.'s blockchain IoT nodes on the same hardware — neither paper cites the other."}, {"id": "⟡G", "kind": "Overlap", "title": "Two papers, one lead author, one real study.", "text": "Lumbard's two OSS papers share method and lens — read as a pair."}]}};
+
+/* ---------- Products ---------- */
+const LAYER = { ent: 'Entities', ctx: 'Context labels', rel: 'Relationships', link: 'Figure and text links' };
+const OFFERS = [
+  { id: 'graph', out: 'See the structure', t: 'Article as a graph', d: 'One article as a map: its key terms and the sections that use them.', needs: ['ent', 'rel'] },
+  { id: 'summary', out: 'Read across papers', t: 'Session summaries', d: 'Papers from one session, grouped by theme, with a scannable map.', needs: ['ent', 'rel'] },
+  { id: 'abstracts', out: 'Summarize for readers', t: 'Structured abstracts', d: 'Five-part summaries for every article: background, objective, method, results, conclusions.', needs: ['ent', 'ctx'] },
+  { id: 'consistency', out: 'Protect integrity', t: 'Consistency checks', d: 'Flag a value that differs between abstract, text, table and figure before it publishes.', needs: ['ent', 'link'] },
+  { id: 'explain', out: 'Grow engagement', t: 'Explain any result', d: 'Tap a table cell and see its method, definition and caveats.', needs: ['ent', 'ctx'] },
+  { id: 'evidence', out: 'Win institutional revenue', t: 'Evidence review', d: 'Study-by-study tables, each entry linked to its source.', needs: ['ent', 'rel', 'link'] },
+  { id: 'feed', out: 'Monetize with AI partners', t: 'Partner feed', d: 'Structured, linked content for AI and discovery partners.', needs: ['ent', 'ctx', 'rel', 'link'] },
+  { id: 'limits', out: 'Show what is not proven', t: 'Limitations across papers', d: 'Every paper\'s stated caveats, gathered by theme in one place.', needs: ['rel'] }
+];
+const ALSO = ['Papers to build on (live in step 3)', 'Collection builder', 'Comparable results', 'Figures workspace', 'Living evidence monitor'];
+
+const STATUS_LABEL = { live: 'Live', prototype: 'Prototype', concept: 'Concept', sample: 'Illustrative sample' };
+
+/* ---------- Steps and presenter notes ---------- */
+const STEPS = [
+  { id: 'enrich', name: 'Enrich', sub: 'Make content machine-readable', render: renderEnrich, mount: syncEnrich,
+    notes: { problem: 'Most of the backlist is text that search, AI tools and partners cannot reliably use.', proof: 'Same passage, raw then enriched. Click a term, click a relationship.', ask: 'Which of your content types should we see this on first?' } },
+  { id: 'derive', name: 'Derive', sub: 'Keywords and abstracts', render: renderDerive,
+    notes: { problem: 'Keywords, abstracts and subject tags are slow to produce and vary by editor.', proof: 'Every keyword points to the sentence it came from. The flagged abstract is shown, not hidden.', ask: 'How do you tag and abstract today, and who does it?' } },
+  { id: 'discover', name: 'Discover', sub: 'Search and related work', render: renderDiscover, mount: mountDiscover,
+    notes: { problem: 'Readers find one article and leave. Search only sees titles and abstracts.', proof: 'Live Beacon search across figures, tables and passages. Related work comes with a reason.', ask: 'Where do your readers drop off today?' } },
+  { id: 'offer', name: 'Apply', sub: 'Products on one content base', render: renderOffer,
+    notes: { problem: 'Each new product starts by re-processing the same content.', proof: 'Four products, each tagged with the enrichment layers it needs.', ask: 'Which of these matches a priority you already have this year?' } }
+];
+const IDS = STEPS.map(s => s.id);
+
+const S = { step: 0, subject: 0, kw: null, enriched: false, layers: { ent: true, ctx: true, rel: true }, ent: null, rel: null,
+            disc: 'search', notes: false };
+
+/* ---------- helpers ---------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const cap = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function status(){ return ''; }
+function reEsc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function mark(t){ return esc(t).replace(/\{\{(\w+)\|([^}]+)\}\}/g, (m, id, d) => `<span class="ent t-${ENT[id].t}" data-ent="${id}" role="button" tabindex="0">${d}</span>`); }
+function strip(t){ return t.replace(/\{\{\w+\|([^}]+)\}\}/g, '$1'); }
+function needsChips(o){ return `<div class="needs">Needs ${o.needs.map(n => `<span class="l">${LAYER[n]}</span>`).join('')}</div>`; }
+
+/* ================= Step 1: Enrich ================= */
+function renderEnrich(){
+  const L = S.layers;
+  const cls = 'enrich' + (S.enriched ? ' on' : '') + (L.ent ? ' l-ent' : '') + (L.ctx ? ' l-ctx' : '') + (L.rel ? ' l-rel' : '');
+  const sents = SENT.map((s, i) => `<span class="sent" data-s="${i}"><span class="ctx">${esc(s.ctx)}</span>${mark(s.text)} </span>`).join('');
+  const rels = REL.map((r, i) => `<button class="rel" data-rel="${i}" aria-pressed="false">${esc(r.a)} <b>${esc(r.v)}</b> ${esc(r.b)}</button>`).join('');
+  return `
+  <div class="h-row"><h1>Turn articles into structured, machine-readable content</h1>${status('sample')}</div>
+  <div class="${cls}" id="enrich">
+    <div>
+      <div class="bar">
+        <button class="btn primary" id="run"></button>
+        <div class="pick" id="layers">
+          <button class="pill" data-layer="ent" aria-pressed="${L.ent}">Entities</button>
+          <button class="pill" data-layer="ctx" aria-pressed="${L.ctx}">Context labels</button>
+          <button class="pill" data-layer="rel" aria-pressed="${L.rel}">Relationships</button>
+          <button class="pill ghost" data-goto="offer" data-open="consistency" title="Shown in the consistency check in step 4">Figure and text links: see step 4</button>
+        </div>
+      </div>
+      <div class="passage">${sents}</div>
+      <p class="fine">${esc(CONFIG.enrichNote)}</p>
+    </div>
+    <aside class="insp"><div id="inspector"></div>
+      <div class="relbox"><h3>Relationships</h3><p class="fine" style="margin:0">Select one to see where it comes from.</p>${rels}</div>
+    </aside>
+  </div>
+  <div class="reads">Everything that follows reads from this layer:
+    <button class="pill" data-goto="derive">Keywords and abstracts</button>
+    <button class="pill" data-goto="discover">Search and related work</button>
+    <button class="pill" data-goto="offer">Products</button>
+  </div>`;
+}
+function inspectorHTML(){
+  if (!S.enriched) return '<p class="muted">Run enrichment to see what the text contains.</p>';
+  if (!S.layers.ent) return '<p class="muted">Turn on Entities to inspect terms.</p>';
+  if (!S.ent) return '<p class="muted">Select a highlighted term to see its type and definition.</p>';
+  const e = ENT[S.ent];
+  const n = SENT.reduce((a, s) => a + (s.text.split('{{' + S.ent + '|').length - 1), 0);
+  return `<span class="chipt t-${e.t}">${TYPES[e.t]}</span><h3 style="font-size:17px">${esc(e.label)}</h3><p>${esc(e.def)}</p><p class="muted">Appears ${n} time${n === 1 ? '' : 's'} in this passage.</p>`;
+}
+function syncEnrich(){
+  const root = $('#enrich'); if (!root) return;
+  const L = S.layers;
+  root.classList.toggle('on', S.enriched);
+  root.classList.toggle('l-ent', L.ent); root.classList.toggle('l-ctx', L.ctx); root.classList.toggle('l-rel', L.rel);
+  $('#run').textContent = S.enriched ? 'Show raw text' : 'Run enrichment';
+  $$('[data-layer]').forEach(b => b.setAttribute('aria-pressed', String(!!L[b.dataset.layer])));
+  $$('.ent', root).forEach(el => el.classList.toggle('sel', el.dataset.ent === S.ent));
+  $$('.rel', root).forEach(el => el.setAttribute('aria-pressed', String(+el.dataset.rel === S.rel)));
+  $$('.sent', root).forEach(el => el.classList.toggle('hi', S.rel != null && REL[S.rel].s === +el.dataset.s));
+  $('#inspector').innerHTML = inspectorHTML();
+}
+
+/* ================= Step 2: Derive ================= */
+function sentencesOf(it){
+  const out = [];
+  Object.entries(it.sa).forEach(([k, v]) => v.replace(/([.!?])\s+(?=[A-Z])/g, '$1\u0001').split('\u0001').forEach(s => out.push({ sec: k, text: s })));
+  return out;
+}
+function hl(text, term){
+  const t = esc(text);
+  if (!term) return t;
+  return t.replace(new RegExp(reEsc(esc(term)), 'gi'), m => `<mark class="k">${m}</mark>`);
+}
+function secLabel(it, k){ return (LABELS[it.subject] || {})[k] || k; }
+function deriveInner(){
+  const it = ITEMS[S.subject], d = DERIVE[S.subject];
+  const pills = ITEMS.map((x, i) => `<button class="pill" aria-pressed="${i === S.subject}" data-subject="${i}">${esc(x.subject)}</button>`).join('');
+  const sents = sentencesOf(it);
+  const term = S.kw != null ? d.kw[S.kw] : null;
+  const kws = d.kw.map((k, i) => `<button class="kw" aria-pressed="${i === S.kw}" data-kw="${i}">${esc(k)}</button>`).join('');
+  let ev = '<p class="fine" style="margin:0 0 14px">Select a keyword to see the sentence it was found in.</p>';
+  if (term){
+    const re = new RegExp(reEsc(term), 'gi');
+    const all = sents.map(s => s.text).join(' ');
+    const n = (all.match(re) || []).length;
+    const hit = sents.find(s => new RegExp(reEsc(term), 'i').test(s.text));
+    ev = hit ? `<div class="ev"><span class="muted">${n} mention${n === 1 ? '' : 's'}. First in ${esc(secLabel(it, hit.sec))}:</span><p>${hl(hit.text, term)}</p></div>`
+             : '<div class="ev muted">Not found in the text.</div>';
+  }
+  const secs = Object.entries(it.sa).map(([k, v]) => `<div class="sec"><h3>${esc(secLabel(it, k))}</h3><p>${hl(v, term)}</p></div>`).join('');
+  const qa = it.issues.length
+    ? `<div class="qa warn"><b>Flagged by automated checks:</b> ${it.issues.map(esc).join('; ')}. Flags are shown, not hidden.</div>`
+    : '<div class="qa ok">Automated checks passed.</div>';
+  const meta = [it.venue, it.doi ? 'DOI ' + it.doi : ''].filter(Boolean).map(esc).join('<br>');
+  const note = NOTE[it.subject] ? `<p class="note">${esc(NOTE[it.subject])}</p>` : '';
+  return `
+  <div class="pick" style="grid-column:1/-1">${pills}</div>
+  <div>
+    <h3>Keywords found in the text</h3>
+    <div class="chips">${kws}</div>
+    ${ev}
+    <h3>Subject terms</h3>
+    <ul class="terms">${d.terms.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+    <p class="note">Example taxonomy. This is where your own subject scheme would apply.</p>
+  </div>
+  <div>
+    <p class="paper"><strong>${esc(it.title)}</strong>${meta ? '<br>' + meta : ''}</p>
+    ${secs}
+    ${qa}
+    ${note}
+  </div>`;
+}
+function renderDerive(){
+  return `
+  <div class="h-row"><h1>Get keywords, abstracts and subject terms from that structure</h1>${status('sample')}</div>
+  <div class="derive" id="derive">${deriveInner()}</div>`;
+}
+function updateDerive(){
+  const el = $('#derive'); if (!el) return;
+  el.innerHTML = deriveInner();
+  const m = $('#derive mark.k');
+  if (m && m.scrollIntoView) m.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+/* ================= Step 3: Discover ================= */
+function renderDiscover(){
+  return `
+  <div class="h-row"><h1>Help readers find and follow the research</h1>${status('live')}</div>
+  <div class="pick" style="margin-bottom:12px">
+    <button class="pill" data-disc="search" aria-pressed="${S.disc === 'search'}">Search by what it says</button>
+    <button class="pill" data-disc="portal" aria-pressed="${S.disc === 'portal'}">Related work, with reasons</button>
+  </div>
+  <div class="frame">
+    <iframe id="f-search" src="${esc(CONFIG.beaconUrl)}search" title="Beacon search" ${S.disc === 'search' ? '' : 'hidden'}></iframe>
+    <iframe id="f-portal" src="${esc(CONFIG.portalUrl)}" title="Reader portal" ${S.disc === 'portal' ? '' : 'hidden'}></iframe>
+  </div>
+  <p class="fine"><a id="openlink" href="#" target="_blank" rel="noopener">Open in a new tab</a>
+    <span id="slow" hidden> · Still loading? The live site can take a moment to wake up.</span></p>`;
+}
+function syncDisc(){
+  $('#f-search').hidden = S.disc !== 'search';
+  $('#f-portal').hidden = S.disc !== 'portal';
+  $$('[data-disc]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.disc === S.disc)));
+  $('#openlink').href = S.disc === 'search' ? CONFIG.beaconUrl : CONFIG.portalUrl;
+}
+let slowTimer = null;
+function mountDiscover(){
+  syncDisc();
+  const loaded = { search: false, portal: false };
+  $('#f-search').addEventListener('load', () => { loaded.search = true; });
+  $('#f-portal').addEventListener('load', () => { loaded.portal = true; });
+  clearTimeout(slowTimer);
+  slowTimer = setTimeout(() => { const s = $('#slow'); if (s && !loaded[S.disc]) s.hidden = false; }, 9000);
+}
+
+/* ================= Step 4: Apply ================= */
+function renderOffer(){
+  const cards = OFFERS.map((o, i) => `
+    <article class="offer${i === 0 ? ' feat' : ''}">
+      <div class="o-top"><span>${esc(o.out)}</span>${status(CONFIG.status[o.id])}</div>
+      <strong>${esc(o.t)}</strong>
+      <span class="o-d">${esc(o.d)}</span>
+      ${needsChips(o)}
+      <div class="acts"><button class="btn primary" data-offer="${o.id}">See it</button></div>
+    </article>`).join('');
+  return `
+  <h1>One content base, many ways to create value</h1>
+  <div class="products">${cards}</div>
+  <p class="legend">Also possible on the same layer: ${ALSO.map(esc).join(', ')}.</p>
+  ${CONFIG.dataHandling ? `<p class="legend"><strong>How your content is handled.</strong> ${esc(CONFIG.dataHandling)}</p>` : ''}`;
+}
+
+/* ---- modal bodies ---- */
+const XCELLS = {
+  head: { title: 'Parasitaemia (%)', rows: [['Definition', 'Share of red blood cells that are infected.'], ['Method', 'Blood smear, 200 fields counted per sample.'], ['Caveat', 'Reported at day 7 only.']] },
+  a: { title: 'Strain A: 12.4%', rows: [['Definition', 'Share of red blood cells infected at day 7.'], ['Method', 'Blood smear, 200 fields counted, n = 24 per group.'], ['Caveat', 'Confidence interval is in the supplement, not the table.']] },
+  b: { title: 'Strain B: 30.1%', rows: [['Definition', 'Share of red blood cells infected at day 7.'], ['Method', 'Blood smear, 200 fields counted, n = 24 per group.'], ['Caveat', 'Counted by a different observer than Strain A.']] }
+};
+const EROWS = [
+  { id: 1, pop: 'Adults', out: 'Yes', src: 'p. 4', q: 'Symptom scores <mark class="v">fell in the treated group</mark> compared with placebo.' },
+  { id: 2, pop: 'Adults', out: 'No', src: 'p. 7', q: '<mark class="v">No difference</mark> in symptom scores was observed between groups.' },
+  { id: 3, pop: 'Children', out: 'Yes', src: 'p. 2', q: 'Among children, symptoms <mark class="v">improved by week 6</mark>.' }
+];
+function feedJSON(view){
+  const mentions = t => Array.from(t.matchAll(/\{\{(\w+)\|/g)).map(m => m[1]);
+  const entities = Object.entries(ENT).map(([id, e]) => ({ id, label: e.label, type: TYPES[e.t], definition: e.def }));
+  const sentences = SENT.map((s, i) => ({ id: 's' + (i + 1), text: strip(s.text), context: s.ctx, entities: Array.from(new Set(mentions(s.text))) }));
+  const relations = REL.map(r => ({ subject: r.a, predicate: r.v, object: r.b, evidence: 's' + (r.s + 1) }));
+  const all = { entities, sentences, relations };
+  const pick = { all, entities: { entities }, context: { sentences: sentences.map(({ id, context }) => ({ id, context })) }, relationships: { relations } };
+  return JSON.stringify(pick[view], null, 2);
+}
+const MODAL = {
+  consistency: () => `
+    <p class="lead">One value, three places. The check reads the abstract, the table and the figure legend, and compares them.</p>
+    <p class="constructed">Constructed example, not a real paper.</p>
+    <div class="srcs">
+      <div class="srcc"><b>Abstract</b><p>Survival at day 14 was <mark class="v">82%</mark> in Strain A and 61% in Strain B.</p></div>
+      <div class="srcc"><b>Table 2</b><table class="tbl"><tr><th>Strain</th><th>Survival, day 14</th></tr><tr><td>A</td><td><mark class="bad">28%</mark></td></tr><tr><td>B</td><td>61%</td></tr></table></div>
+      <div class="srcc"><b>Figure 3 legend</b><p>Survival of Strain A (<mark class="v">82%</mark> at day 14) and Strain B.</p></div>
+    </div>
+    <div class="flagbox" id="cflag"><b>Mismatch found.</b> Survival for Strain A at day 14 is 82% in the abstract and Figure 3, and 28% in Table 2.</div>
+    <div class="acts"><button class="btn primary" data-draft>Draft author query</button><button class="btn" data-dismiss>Not an issue</button></div>
+    <div class="draft" id="cdraft" hidden>Please confirm the survival of Strain A at day 14. The abstract and Figure 3 report 82%, while Table 2 reports 28%.</div>`,
+  explain: () => `
+    <p class="lead">Select a number or the column heading to see what it means and how it was produced.</p>
+    <p class="constructed">Constructed example, not a real paper.</p>
+    <table class="tbl"><tr><th>Strain</th><th><button class="cellbtn" data-x="head" aria-pressed="false">Parasitaemia (%)</button></th></tr>
+      <tr><td>A</td><td><button class="cellbtn" data-x="a" aria-pressed="false">12.4</button></td></tr>
+      <tr><td>B</td><td><button class="cellbtn" data-x="b" aria-pressed="false">30.1</button></td></tr></table>
+    <div class="xinsp" id="xinsp"><span class="muted">Nothing selected yet.</span></div>`,
+  evidence: () => `
+    <p class="lead">Question: does the treatment reduce symptoms? Select a row to see the passage it comes from.</p>
+    <p class="constructed">Constructed example, not real studies.</p>
+    <table class="tbl"><tr><th>Study</th><th>Population</th><th>Outcome</th><th>Source</th></tr>
+    ${EROWS.map(r => `<tr><td>${r.id}</td><td>${r.pop}</td><td>${r.out}</td><td><button class="cellbtn" data-e="${r.id}" aria-pressed="false">${r.src}</button></td></tr>`).join('')}</table>
+    <div class="xinsp" id="einsp"><span class="muted">Select a source to see the passage.</span></div>`,
+  graph: () => `
+    <p class="lead">The article's claims, sections, figures and data checks, linked to each other.</p>
+    <div class="agframe"><iframe src="article-graph.html" title="Article graph" loading="lazy"></iframe></div>`,
+  summary: () => `
+    <p class="lead">One session, read paper by paper. Open a theme, then a paper. The cross-cutting patterns are at the end.</p>
+    <p class="constructed">Real output: the session's scannable synthesis.</p>
+    <div class="scan">${APPLY.scannable.groups.map((g, gi) => `
+      <details class="sgrp"${gi === 0 ? ' open' : ''}><summary>${esc(g.name)} <span class="cnt">${g.papers.length}</span></summary>
+        ${g.papers.map(p => `
+        <article class="spap">
+          <h4><span class="who">${esc(p.who)}</span> ${esc(p.title)}</h4>
+          <p class="hook">${esc(p.hook)}</p>
+          <dl><dt>Method</dt><dd>${esc(cap(p.method))}</dd><dt>Novelty</dt><dd>${esc(cap(p.novelty))}</dd><dt>Caveat</dt><dd>${esc(cap(p.caveat))}</dd></dl>
+          ${p.flag ? `<p class="flag">${esc(p.flag)}</p>` : ''}
+        </article>`).join('')}
+      </details>`).join('')}
+    </div>
+    <details class="sgrp patterns"><summary>Cross-cutting patterns <span class="cnt">${APPLY.scannable.patterns.length}</span></summary>
+      ${APPLY.scannable.patterns.map(x => `<div class="pat"><b>${esc(x.id)} · ${esc(x.kind)}: ${esc(x.title)}</b><p>${esc(x.text)}</p></div>`).join('')}
+    </details>`,
+  abstracts: () => `
+    <p class="lead">The same five parts for every article, whatever the field. Pick a subject.</p>
+    <p class="constructed">Real generated output for each paper.</p>
+    <div class="pick" id="absPick">${ITEMS.map((x, i) => `<button class="pill" aria-pressed="${i === 0}" data-abs="${i}">${esc(x.subject)}</button>`).join('')}</div>
+    <div id="absBody">${absBody(0)}</div>`,
+  limits: () => `
+    <p class="lead">What each paper says limits its own result. Read these before you rely on a finding.</p>
+    <p class="constructed">Real caveats from the session's scannable synthesis.</p>
+    <div class="scan">${APPLY.scannable.groups.map((g, gi) => `
+      <details class="sgrp"${gi === 0 ? ' open' : ''}><summary>${esc(g.name)} <span class="cnt">${g.papers.length}</span></summary>
+        ${g.papers.map(p => `<article class="spap"><h4><span class="who">${esc(p.who)}</span> ${esc(p.title)}</h4><p class="hook">${esc(cap(p.caveat))}</p></article>`).join('')}
+      </details>`).join('')}
+    </div>`,
+  feed: () => `
+    <p class="lead">What a partner would receive for one article: terms, context and relationships, each tied back to the sentence it came from.</p>
+    <p class="constructed">Illustrative structure built from the sample in step 1. Delivery format is a scoping question.</p>
+    <div class="pick" id="feedtabs">
+      ${['all', 'entities', 'context', 'relationships'].map((v, i) => `<button class="pill" data-feed="${v}" aria-pressed="${i === 0}">${v[0].toUpperCase() + v.slice(1)}</button>`).join('')}
+    </div>
+    <pre class="json" id="feedjson">${esc(feedJSON('all'))}</pre>`
+};
+function absBody(i){
+  const it = ITEMS[i];
+  const secs = Object.entries(it.sa).map(([k, v]) => `<div class="sec"><h3>${esc(k)}</h3><p>${esc(v)}</p></div>`).join('');
+  return `<h3 class="abs-title">${esc(it.title)}</h3><p class="muted-line">${esc(it.field)}</p>${secs}`;
+}
+function openOffer(id){
+  const o = OFFERS.find(x => x.id === id); if (!o) return;
+  $('#modal').innerHTML = `<div class="sheet${['graph','summary','abstracts','limits'].includes(id) ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(o.t)}">
+    <button class="x" aria-label="Close">×</button>
+    <span class="aud">${esc(o.out)}</span> ${status(CONFIG.status[id])}
+    <h2>${esc(o.t)}</h2>
+    ${MODAL[id]()}
+    <div class="mfoot">${needsChips(o)}</div>
+  </div>`;
+  $('#modal').classList.add('on');
+  $('#modal .x').focus();
+}
+function closeModal(){ $('#modal').classList.remove('on'); $('#modal').innerHTML = ''; }
+/* ================= Shell ================= */
+function renderNotes(){
+  const n = STEPS[S.step].notes;
+  $('#notes').innerHTML = `<b>Problem</b><p>${esc(n.problem)}</p><p><b>On screen</b><br>${esc(n.proof)}</p><p><b>Ask</b><br>${esc(n.ask)}</p>`;
+  $('#notes').classList.toggle('on', S.notes);
+}
+function render(){
+  const s = STEPS[S.step];
+  $('#stage').innerHTML = s.render();
+  if (s.mount) s.mount();
+  $('#steps').innerHTML = STEPS.map((x, i) =>
+    `<button data-step="${i}" ${i === S.step ? 'aria-current="step"' : ''}><strong>${i + 1}. ${esc(x.name)}</strong><small>${esc(x.sub)}</small></button>`).join('');
+  $('#prev').disabled = S.step === 0;
+  $('#next').textContent = S.step === STEPS.length - 1 ? 'Start over' : 'Next';
+  renderNotes();
+  try { history.replaceState(null, '', '#' + s.id); } catch (e) {}
+  $('#stage').scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+}
+function go(i){ if (i < 0 || i >= STEPS.length) return; S.step = i; render(); }
+
+document.addEventListener('click', e => {
+  const t = e.target; let el;
+  if (t.closest('.x') || t.id === 'modal'){ closeModal(); return; }
+  if ((el = t.closest('[data-step]'))){ go(+el.dataset.step); return; }
+  if ((el = t.closest('[data-goto]'))){ go(IDS.indexOf(el.dataset.goto)); if (el.dataset.open) openOffer(el.dataset.open); return; }
+  if ((el = t.closest('[data-offer]'))){ openOffer(el.dataset.offer); return; }
+  /* Enrich */
+  if (t.closest('#run')){ S.enriched = !S.enriched; if (!S.enriched){ S.ent = null; S.rel = null; } syncEnrich(); return; }
+  if ((el = t.closest('[data-layer]'))){ S.layers[el.dataset.layer] = !S.layers[el.dataset.layer]; syncEnrich(); return; }
+  if ((el = t.closest('[data-ent]'))){ if (S.enriched && S.layers.ent){ S.ent = el.dataset.ent; syncEnrich(); } return; }
+  if ((el = t.closest('[data-rel]'))){ S.rel = S.rel === +el.dataset.rel ? null : +el.dataset.rel; syncEnrich(); return; }
+  /* Derive */
+  if ((el = t.closest('[data-subject]'))){ S.subject = +el.dataset.subject; S.kw = null; updateDerive(); return; }
+  if ((el = t.closest('[data-kw]'))){ S.kw = S.kw === +el.dataset.kw ? null : +el.dataset.kw; updateDerive(); return; }
+  /* Discover */
+  if ((el = t.closest('[data-disc]'))){ S.disc = el.dataset.disc; syncDisc(); return; }
+  /* Modal interactions */
+  if (t.closest('[data-draft]')){ $('#cdraft').hidden = !$('#cdraft').hidden; return; }
+  if (t.closest('[data-dismiss]')){ const f = $('#cflag'); f.classList.toggle('dim'); f.innerHTML = f.classList.contains('dim') ? '<b>Dismissed.</b> Marked as not an issue and logged.' : '<b>Mismatch found.</b> Survival for Strain A at day 14 is 82% in the abstract and Figure 3, and 28% in Table 2.'; return; }
+  if ((el = t.closest('[data-x]'))){
+    const c = XCELLS[el.dataset.x];
+    $$('[data-x]').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    $('#xinsp').innerHTML = `<strong>${esc(c.title)}</strong><dl>${c.rows.map(r => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`; return;
+  }
+  if ((el = t.closest('[data-e]'))){
+    const r = EROWS.find(x => x.id === +el.dataset.e);
+    $$('[data-e]').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    $('#einsp').innerHTML = `<strong>Study ${r.id}, ${esc(r.src)}</strong><p style="margin:6px 0 0">${r.q}</p>`; return;
+  }
+  if ((el = t.closest('[data-feed]'))){
+    $$('[data-feed]').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+    $('#feedjson').textContent = feedJSON(el.dataset.feed); return;
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ closeModal(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-ent]')){ e.preventDefault(); e.target.click(); return; }
+  if ($('#modal').classList.contains('on')) return;
+  if (e.target.matches && e.target.matches('input,textarea,select')) return;
+  if (e.key === 'ArrowRight') go(S.step + 1);
+  else if (e.key === 'ArrowLeft') go(S.step - 1);
+  else if (e.key === 'n' || e.key === 'N'){ S.notes = !S.notes; renderNotes(); }
+});
+$('#prev').onclick = () => go(S.step - 1);
+$('#next').onclick = () => { S.step === STEPS.length - 1 ? go(0) : go(S.step + 1); };
+
+/* Wake the hosted Beacon app while the presenter is still on steps 1 and 2 */
+try { fetch(CONFIG.beaconUrl, { mode: 'no-cors' }).catch(() => {}); } catch (e) {}
+
+const h0 = location.hash.slice(1);
+if (IDS.includes(h0)) S.step = IDS.indexOf(h0);
+render();
+
+</script>
+</body></html>

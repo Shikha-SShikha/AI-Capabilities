@@ -472,7 +472,6 @@ function renderOffer(){
   return `
   <h1>One content base, many ways to create value</h1>
   <div class="products">${cards}</div>
-  <p class="legend">Also possible on the same layer: ${ALSO.map(esc).join(', ')}.</p>
   ${CONFIG.dataHandling ? `<p class="legend"><strong>How your content is handled.</strong> ${esc(CONFIG.dataHandling)}</p>` : ''}`;
 }
 

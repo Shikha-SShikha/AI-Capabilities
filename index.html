@@ -61,7 +61,9 @@ h3{margin:0 0 4px;font-size:14px;font-weight:600}
 .ctx{display:none;font:600 12px/1 system-ui,sans-serif}
 .enrich.on.l-ctx .ctx{display:inline-block;margin-right:8px;padding:4px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);vertical-align:2px}
 .ent{border-radius:5px;padding:1px 3px;margin:0 -1px;transition:background .5s,color .5s,box-shadow .2s}
-.enrich.on.l-ent .ent{cursor:pointer}
+.enrich.on.l-ent .ent{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.enrich.on.l-ent .ent:hover{box-shadow:0 0 0 2px currentColor;filter:brightness(.92)}
+.enrich.on.l-ent .ent:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .enrich.on.l-ent .t-org{background:var(--org-bg);color:var(--org-fg)}
 .enrich.on.l-ent .t-cell{background:var(--cell-bg);color:var(--cell-fg)}
 .enrich.on.l-ent .t-gene{background:var(--gene-bg);color:var(--gene-fg)}
@@ -74,6 +76,8 @@ h3{margin:0 0 4px;font-size:14px;font-weight:600}
 .relbox{display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
 .enrich.on.l-rel .relbox{display:block}
 .rel{display:block;width:100%;text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;margin-top:6px;font-size:14px}
+.rel:hover{border-color:var(--accent);background:var(--accent-soft)}
+.rel:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rel b{color:var(--accent);font-weight:600}
 .rel[aria-pressed="true"]{border-color:var(--accent)}
 .reads{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px}

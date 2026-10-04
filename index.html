@@ -106,6 +106,9 @@ mark.k{background:#ffe58a;color:#121821;border-radius:3px;padding:0 2px}
 .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .offer{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);display:flex;flex-direction:column;gap:5px}
 .offer .btn{align-self:flex-start;padding:7px 14px;font-size:14px}
+.offer{cursor:pointer}
+.offer:hover{border-color:var(--accent)}
+.offer:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .offer.feat{border-color:var(--accent)}
 .o-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--accent)}
 .offer strong{font-size:16px}
@@ -461,12 +464,11 @@ function mountDiscover(){
 /* ================= Step 4: Apply ================= */
 function renderOffer(){
   const cards = OFFERS.map((o, i) => `
-    <article class="offer${i === 0 ? ' feat' : ''}">
+    <article class="offer${i === 0 ? ' feat' : ''}" data-offer="${o.id}" tabindex="0" role="button" aria-label="${esc(o.t)}">
       <div class="o-top"><span>${esc(o.out)}</span>${status(CONFIG.status[o.id])}</div>
       <strong>${esc(o.t)}</strong>
       <span class="o-d">${esc(o.d)}</span>
       ${needsChips(o)}
-      <div class="acts"><button class="btn primary" data-offer="${o.id}">See it</button></div>
     </article>`).join('');
   return `
   <h1>One content base, many ways to create value</h1>

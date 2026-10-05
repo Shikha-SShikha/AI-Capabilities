@@ -497,16 +497,8 @@ function feedJSON(view){
 }
 const MODAL = {
   consistency: () => `
-    <p class="lead">One value, three places. The check reads the abstract, the table and the figure legend, and compares them.</p>
-    <p class="constructed">Constructed example, not a real paper.</p>
-    <div class="srcs">
-      <div class="srcc"><b>Abstract</b><p>Survival at day 14 was <mark class="v">82%</mark> in Strain A and 61% in Strain B.</p></div>
-      <div class="srcc"><b>Table 2</b><table class="tbl"><tr><th>Strain</th><th>Survival, day 14</th></tr><tr><td>A</td><td><mark class="bad">28%</mark></td></tr><tr><td>B</td><td>61%</td></tr></table></div>
-      <div class="srcc"><b>Figure 3 legend</b><p>Survival of Strain A (<mark class="v">82%</mark> at day 14) and Strain B.</p></div>
-    </div>
-    <div class="flagbox" id="cflag"><b>Mismatch found.</b> Survival for Strain A at day 14 is 82% in the abstract and Figure 3, and 28% in Table 2.</div>
-    <div class="acts"><button class="btn primary" data-draft>Draft author query</button><button class="btn" data-dismiss>Not an issue</button></div>
-    <div class="draft" id="cdraft" hidden>Please confirm the survival of Strain A at day 14. The abstract and Figure 3 report 82%, while Table 2 reports 28%.</div>`,
+    <p class="lead">The Consistency checks screen in Editorial Central. Values that differ between the abstract, text, tables and figures are flagged for the editor to review.</p>
+    <div class="agframe"><iframe src="ec/Main.dc.html" title="Editorial Central: Consistency checks" loading="lazy"></iframe></div>`,
   explain: () => `
     <p class="lead">Select a number or the column heading to see what it means and how it was produced.</p>
     <p class="constructed">Constructed example, not a real paper.</p>
@@ -568,7 +560,7 @@ function absBody(i){
 }
 function openOffer(id){
   const o = OFFERS.find(x => x.id === id); if (!o) return;
-  $('#modal').innerHTML = `<div class="sheet${['graph','summary','abstracts','limits'].includes(id) ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(o.t)}">
+  $('#modal').innerHTML = `<div class="sheet${['graph','summary','abstracts','limits','consistency'].includes(id) ? ' wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(o.t)}">
     <button class="x" aria-label="Close">×</button>
     <span class="aud">${esc(o.out)}</span> ${status(CONFIG.status[id])}
     <h2>${esc(o.t)}</h2>

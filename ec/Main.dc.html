@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Editorial Central: integrity checks flow</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+html,body{height:100%}x-dc{display:block;height:100%}body{zoom:var(--z,1)}
+body{margin:0;font-family:'Fira Sans','Segoe UI',system-ui,sans-serif;color:#1F2933;background:#F4F5F7}
+a{color:#2440C4}a:hover{color:#182C8C}
+button{font-family:inherit}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:#C9CED6;border-radius:8px}
+</style>
+</helmet>
+
+<div style="position: relative; width: 100%; height: calc(100vh / var(--z, 1)); box-sizing: border-box; display: flex; flex-direction: column; background: #F4F5F7; font-family: 'Fira Sans','Segoe UI',system-ui,sans-serif; color: #1F2933">
+
+  <!-- Top bar -->
+  <header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: #FFFFFF; border-bottom: 1px solid #E4E7EC">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <img src="logo.svg" alt="Editorial Central" style="height: 42px; width: auto; display: block">
+      </div>
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.05em; color: #FFFFFF; background: #2F6FD0; border-radius: 999px; padding: 2px 6px">BETA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px">
+      <button aria-label="Notifications" style="width: 44px; height: 44px; border: none; background: transparent; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6B7A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg>
+      </button>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 12px; border: 1px solid #E4E7EC; border-radius: 6px">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#D9A22B" stroke="#B5831A" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h8v15H3zM13 5h8v15h-8z"></path></svg>
+        <div style="line-height: 1">
+          <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.12em">ABC</div>
+          <div style="font-weight: 600; font-size: 8px; letter-spacing: 0.2em; margin-top: 2px">PRESS</div>
+        </div>
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: #D5103F; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">JE</div>
+      </div>
+    </div>
+  </header>
+
+
+  <sc-if value="{{isTasks}}" hint-placeholder-val="{{ true }}">
+  <main style="flex-grow: 1; min-height: 0; padding: 24px; display: flex; flex-direction: column">
+    <h1 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600">My Tasks</h1>
+    <div role="tablist" aria-label="Task lists" style="display: flex; gap: 20px; border-bottom: 1px solid #DDE1E7; margin-bottom: 12px">
+      <button role="tab" aria-selected="true" style="min-height: 44px; border: none; border-bottom: 2px solid #2A1FB4; background: transparent; padding: 0 4px; font-size: 13px; font-weight: 600; color: #2A1FB4; display: flex; align-items: center; gap: 8px; cursor: pointer">Open Task <span style="font-size: 11px; font-weight: 600; border: 1px solid #C9CCF2; background: #F1F1FD; color: #2A1FB4; border-radius: 999px; padding: 1px 7px">1</span></button>
+      <button role="tab" aria-selected="false" style="min-height: 44px; border: none; border-bottom: 2px solid transparent; background: transparent; padding: 0 4px; font-size: 13px; font-weight: 400; color: #3A424C; display: flex; align-items: center; gap: 8px; cursor: pointer">Completed Task <span style="font-size: 11px; font-weight: 600; border: 1px solid #DDE1E7; background: #F4F5F7; color: #3A424C; border-radius: 999px; padding: 1px 7px">7</span></button>
+    </div>
+    <section aria-label="Open tasks" style="background: #FFFFFF; border-radius: 4px; padding: 12px 10px 20px 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 0 10px 0">
+        <span style="font-size: 12px; color: #5F6B7A">You are viewing 1 out of 1 reports</span>
+        <div style="display: flex; align-items: center; gap: 18px">
+          <button aria-label="Search" style="width: 32px; height: 32px; border: none; background: transparent; color: #1D4ED8; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></button>
+          <button style="min-height: 32px; border: none; background: transparent; padding: 0; color: #1D4ED8; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"></path></svg>Sort</button>
+          <button style="min-height: 32px; border: none; background: transparent; padding: 0; color: #1D4ED8; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"></path></svg>Filters</button>
+        </div>
+      </div>
+      <div role="table" aria-label="Open tasks">
+        <div role="row" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); background: #F1F2F5; padding: 12px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #3A424C">
+          <span role="columnheader">MANUSCRIPT ID</span><span role="columnheader">JOURNAL NAME</span><span role="columnheader">REPORT STATUS</span><span role="columnheader">DUE WITHIN</span><span role="columnheader">ISSUES</span><span role="columnheader">ACTIONS</span>
+        </div>
+        <div role="row" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; padding: 10px 10px; font-size: 13px">
+          <span role="cell" style="font-weight: 500">JO-2026-01309E-20260603015319</span>
+          <span role="cell">Journal of Organic Chemistry</span>
+          <span role="cell"><span style="font-size: 12px; font-weight: 600; color: #0B5F8A; background: #EAF5FB; border: 1px solid #B9DDEE; border-radius: 4px; padding: 3px 8px">Awaiting Review</span></span>
+          <span role="cell" style="color: #5F6B7A">-</span>
+          <span role="cell"><span style="display: inline-block; font-size: 12px; font-weight: 700; color: #B42318; background: #FDECEA; border: 1px solid #F6C9C4; border-radius: 4px; padding: 5px 9px">5</span></span>
+          <span role="cell"><button onClick="{{startReview}}" style="min-height: 32px; border: none; border-radius: 4px; background: #2A1FB4; color: #FFFFFF; font-size: 13px; font-weight: 600; padding: 0 14px; cursor: pointer">Review</button></span>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isStep}}" hint-placeholder-val="{{ false }}">
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column">
+
+  <!-- Breadcrumb -->
+  <div style="height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px">
+    <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px">
+      <button onClick="{{goTasks}}" style="min-height: 32px; border: none; background: transparent; padding: 0; font-size: 13px; color: #5F6B7A; cursor: pointer">My Task</button>
+      <span style="color: #B4BBC5">/</span>
+      <span style="font-weight: 600">JO-2026-01309E-20260603015319</span>
+      <span style="color: #B4BBC5">/</span>
+      <div style="position: relative">
+        <button aria-expanded="{{menuExpanded}}" onClick="{{toggleMenu}}" style="min-height: 32px; border: none; background: transparent; padding: 0; font-size: 13px; font-weight: 600; color: #2A2FA8; display: flex; align-items: center; gap: 6px; cursor: pointer">{{stepLabel}}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; top: 36px; left: -8px; z-index: 20; width: 250px; background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 6px; box-shadow: 0 8px 24px rgba(31,41,51,0.14); padding: 6px; display: flex; flex-direction: column; gap: 2px">
+            <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+              <button onClick="{{st.pick}}" style="{{st.style}}">{{st.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </nav>
+    <button style="min-height: 32px; border: none; background: transparent; padding: 0; font-size: 13px; font-weight: 600; color: #2440C4; display: flex; align-items: center; gap: 6px; cursor: pointer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h9v16H6zM15 4h4v4"></path></svg>Manuscript
+    </button>
+  </div>
+
+  <sc-if value="{{isAuth}}" hint-placeholder-val="{{ false }}">
+  <section aria-label="Authorship Verification" style="flex-grow: 1; min-height: 0; margin: 0 24px; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-bottom: 1px solid #E4E7EC">
+      <h1 style="margin: 0; font-size: 17px; font-weight: 500">Authorship Verification</h1>
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 4px; padding: 3px 9px; background: #EAF6EF; color: #14532D"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>All clear</span>
+    </div>
+    <div style="flex-grow: 1; min-height: 0; display: flex">
+      <nav aria-label="Authors" style="width: 200px; flex-shrink: 0; border-right: 1px solid #E4E7EC; display: flex; flex-direction: column">
+        <div style="height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #E4E7EC">
+          <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.05em; color: #3A424C">AUTHORS (2)</span>
+          <button aria-label="Add author" style="width: 32px; height: 32px; border: none; background: transparent; color: #1F2933; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px">
+          <sc-for list="{{authors}}" as="a" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 4px">
+              <button aria-pressed="{{a.pressed}}" onClick="{{a.pick}}" style="{{a.style}}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5z"></path></svg>
+                <span style="flex-grow: 1; text-align: left">{{a.name}}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Verified" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+              </button>
+              <button aria-label="More options" style="width: 24px; height: 32px; border: none; background: transparent; color: #3A424C; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="19" r="1.6"></circle></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </nav>
+
+      <div class="scroll" style="flex-grow: 1; min-width: 0; overflow-y: auto; background: #F7F8FA; padding: 20px 40px 28px 40px; display: flex; flex-direction: column; gap: 20px">
+        <div style="flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 16px; background: #FFFBEA; border-radius: 4px; box-shadow: 0 1px 4px rgba(31,41,51,0.12)">
+          <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: #FCEFC0; color: #8A5A00; display: flex; align-items: center; justify-content: center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5z"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; font-size: 15px; font-weight: 600">{{author.name}}</h2>
+            <div style="font-size: 13px">Department of Chemistry</div>
+          </div>
+        </div>
+
+        <sc-if value="{{author.noData}}" hint-placeholder-val="{{ false }}">
+          <div style="flex-shrink: 0; background: #FFFFFF; padding: 24px 32px; font-size: 14px; color: #3A424C">[Checks for this author were not in the screenshots this prototype was built from]</div>
+        </sc-if>
+
+        <sc-if value="{{author.hasData}}" hint-placeholder-val="{{ true }}">
+        <div style="flex-shrink: 0; background: #FFFFFF; padding: 20px 32px 24px 32px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A424C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>
+            <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.05em; margin-left: 12px">MULTIPLE MATCHES FOUND</span>
+            <span style="font-size: 12px; color: #3A424C">9 Matches</span>
+          </div>
+
+          <div style="border: 1px solid #7C93E8; background: #F3F6FE; border-radius: 4px; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: center; gap: 14px">
+              <span aria-hidden="true" style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; border: 2px solid #1D3FCF; display: flex; align-items: center; justify-content: center"><span style="width: 9px; height: 9px; border-radius: 50%; background: #1D3FCF"></span></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B73D6" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5z"></path></svg>
+              <span style="font-size: 15px; font-weight: 600; flex-grow: 1">Ankit Yadav</span>
+              <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: #14532D">CONFIDENCE</span>
+              <span style="font-size: 12px; font-weight: 700; color: #14532D; margin-right: 8px">100%</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <span style="font-size: 12px; background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 4px; padding: 5px 9px">H-index 0</span>
+              <span style="font-size: 12px; background: #FFFFFF; border: 1px solid #DDE1E7; border-radius: 4px; padding: 5px 9px">1 publications</span>
+            </div>
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #3A424C">PAST AFFILIATIONS</div>
+            <div style="font-size: 13px; padding-left: 10px">Wayne State University</div>
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #3A424C">RESEARCH EXPERTISE</div>
+            <div style="font-size: 13px">Chemistry &nbsp;·&nbsp; Modular design &nbsp;·&nbsp; Combinatorial chemistry &nbsp;·&nbsp; Chemical synthesis &nbsp;·&nbsp; Modular construction</div>
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #3A424C">RECENT WORKS</div>
+            <div style="font-size: 13px"><a href="#">Synthetic Studies toward Neotatarine</a></div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 8px 0 8px">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="font-size: 13px; font-weight: 600; margin-right: 4px">Checks</span>
+              <span style="min-height: 32px; box-sizing: border-box; border-radius: 999px; padding: 0 12px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #1B2F9A; background: #EEF2FE; border: 1px solid #9DB2F5">All</span>
+              <span style="min-height: 32px; box-sizing: border-box; border-radius: 999px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; background: #FFFFFF; border: 1px solid #D5DAE1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6M15 9l-6 6"></path></svg>2 Issues</span>
+              <span style="min-height: 32px; box-sizing: border-box; border-radius: 999px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; background: #FFFFFF; border: 1px solid #D5DAE1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B47B00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.5 20h19zM12 10v4M12 17h.01"></path></svg>12 Warnings</span>
+              <span style="min-height: 32px; box-sizing: border-box; border-radius: 999px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; background: #FFFFFF; border: 1px solid #D5DAE1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>4 Passed</span>
+            </div>
+            <label style="display: flex; align-items: center; gap: 8px; width: 240px; height: 32px; box-sizing: border-box; border: 1px solid #D5DAE1; border-radius: 4px; padding: 0 12px; background: #FFFFFF; color: #5F6B7A">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+              <input aria-label="Search checks" placeholder="Search me" style="flex-grow: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 13px; background: transparent">
+            </label>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0 0 34px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A424C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>
+            <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.05em; margin-left: 12px">AUTHOR VERIFICATION</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 0 34px">
+            <sc-for list="{{authRows}}" as="ar" hint-placeholder-count="6">
+              <div style="min-height: 64px; box-sizing: border-box; border: 1px solid #E4E7EC; border-radius: 4px; padding: 10px 32px 10px 36px; display: flex; align-items: center; gap: 22px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3A424C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="m6 9 6 6 6-6"></path></svg>
+                <span style="font-size: 13px; font-weight: 500; letter-spacing: 0.03em; flex-grow: 1">{{ar.title}}</span>
+                <span style="{{ar.pillStyle}}">
+                  <sc-if value="{{ar.isWarn}}" hint-placeholder-val="{{ true }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#E0A100" stroke="#E0A100" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.5 20h19z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ar.isPass}}" hint-placeholder-val="{{ false }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+                  </sc-if>
+                  {{ar.pill}}
+                </span>
+                <sc-if value="{{ar.ok}}" hint-placeholder-val="{{ true }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Accepted" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+                </sc-if>
+                <sc-if value="{{ar.bad}}" hint-placeholder-val="{{ false }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.6" stroke-linecap="round" aria-label="Issue" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6M15 9l-6 6"></path></svg>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div style="font-size: 13px; color: #4A5361">[6 more checks, not shown in the screenshots this prototype was built from]</div>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
+  <sc-if value="{{isCite}}" hint-placeholder-val="{{ false }}">
+  <section aria-label="Citation Integrity" style="flex-grow: 1; min-height: 0; margin: 0 24px; display: flex; flex-direction: column; gap: 12px">
+    <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 19px; font-weight: 500">Citation Integrity</h1>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 3px 8px; background: #EAF6EF; color: #14532D"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>All clear</span>
+        <span style="font-size: 11px; font-weight: 500; border-radius: 4px; padding: 3px 8px; background: #FFF8E1; color: #8A5A00">2 findings</span>
+        <button aria-pressed="{{citePressed}}" onClick="{{toggleCite}}" style="min-height: 32px; border: none; background: transparent; padding: 0 0 0 14px; font-size: 12px; color: #1F2933; display: flex; align-items: center; gap: 6px; cursor: pointer"><strong>View:</strong> Need Attention
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <span style="font-size: 12px; color: #5F6B7A; margin-left: 6px">{{citeViewing}}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 18px">
+        <button aria-label="Search" style="width: 32px; height: 32px; border: none; background: transparent; color: #1D4ED8; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></button>
+        <button style="min-height: 32px; border: none; background: transparent; padding: 0; color: #1D4ED8; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"></path></svg>Sort</button>
+        <button style="min-height: 32px; border: none; background: transparent; padding: 0; color: #1D4ED8; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"></path></svg>Filters</button>
+      </div>
+    </div>
+
+    <sc-if value="{{citeEmpty}}" hint-placeholder-val="{{ true }}">
+      <div style="flex-shrink: 0; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 4px; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+        <div style="font-size: 13px; color: #5F6B7A">No reference needs attention</div>
+        <button onClick="{{toggleCite}}" style="min-height: 36px; border: none; background: transparent; color: #1D4ED8; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Show 17 Passed checks</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{citeShown}}" hint-placeholder-val="{{ false }}">
+      <div role="table" aria-label="References" style="flex-grow: 1; min-height: 0; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden">
+        <div role="row" style="flex-shrink: 0; display: grid; grid-template-columns: minmax(0, 1fr) 100px 96px 90px 130px 170px 124px 144px 64px 156px; align-items: center; background: #F1F2F5; padding: 14px 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #3A424C">
+          <span role="columnheader">REFERENCE</span><span role="columnheader">RELEVANCE</span><span role="columnheader">AGE</span><span role="columnheader">SELF-CITED</span><span role="columnheader">RETRACTION MATCH</span><span role="columnheader">LINKED RETRACTED AUTHOR</span><span role="columnheader">RETRACTION WATCH</span><span role="columnheader">BIBLIOGRAPHY SOURCE</span><span role="columnheader">EDITORS</span><span role="columnheader">ACTION</span>
+        </div>
+        <div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto">
+          <sc-for list="{{refs}}" as="rf" hint-placeholder-count="8">
+            <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 100px 96px 90px 130px 170px 124px 144px 64px 156px; align-items: center; padding: 11px 12px; border-bottom: 1px solid #EEF0F3; font-size: 13px">
+              <span role="cell" style="padding-right: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{rf.label}}</span>
+              <sc-for list="{{rf.cells}}" as="cl" hint-placeholder-count="7">
+                <span role="cell"><span style="{{cl.style}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="{{cl.tick}}"></path></svg>{{cl.label}}</span></span>
+              </sc-for>
+              <span role="cell" style="color: #5F6B7A">-</span>
+              <span role="cell" style="display: flex; gap: 8px">
+                <button aria-pressed="{{rf.keepPressed}}" onClick="{{rf.keep}}" style="{{rf.keepStyle}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>Keep</button>
+                <button aria-pressed="{{rf.flagPressed}}" onClick="{{rf.flag}}" style="{{rf.flagStyle}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4h11l-2 4 2 4H6"></path></svg>Flag</button>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+  </sc-if>
+
+  <sc-if value="{{isContent}}" hint-placeholder-val="{{ false }}">
+  <!-- Main card -->
+  <section aria-label="Content Integrity" style="flex-grow: 1; min-height: 0; margin: 0 24px; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden">
+
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid #E4E7EC">
+      <h1 style="margin: 0; font-size: 18px; font-weight: 600">Content Integrity</h1>
+      <span style="{{statusStyle}}">
+        <sc-if value="{{allClear}}" hint-placeholder-val="{{ false }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>
+        </sc-if>
+        {{statusLabel}}
+      </span>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; display: flex">
+
+      <!-- Check list -->
+      <nav aria-label="Checks" style="width: 244px; flex-shrink: 0; border-right: 1px solid #E4E7EC; display: flex; flex-direction: column">
+        <div style="height: 48px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #E4E7EC; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; color: #3A424C">CHECKS (4)</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px">
+          <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+            <button aria-pressed="{{n.pressed}}" onClick="{{n.pick}}" style="{{n.style}}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{n.icon}}"></path></svg>
+              <span style="flex-grow: 1; text-align: left">{{n.name}}</span>
+              <sc-if value="{{n.hasCount}}" hint-placeholder-val="{{ false }}">
+                <span aria-label="{{n.countLabel}}" style="min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 6px; border-radius: 999px; background: #FFF1CC; border: 1px solid #E5B54A; color: #6B4100; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{n.count}}</span>
+              </sc-if>
+              <sc-if value="{{n.isClear}}" hint-placeholder-val="{{ true }}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="No findings" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </nav>
+
+      <!-- Selected check -->
+      <div class="scroll" style="flex-grow: 1; min-width: 0; overflow-y: auto; background: #F7F8FA; padding: 20px 28px 28px 28px; display: flex; flex-direction: column; gap: 16px">
+
+        <div style="flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: #FFFBEA; border: 1px solid #F3E9C4; border-radius: 6px; box-shadow: 0 1px 3px rgba(31,41,51,0.06)">
+          <div style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: #FCEFC0; color: #8A5A00; display: flex; align-items: center; justify-content: center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{cur.icon}}"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 600">{{cur.name}}</h2>
+            <div style="font-size: 14px; line-height: 1.45; color: #3A424C">{{cur.desc}}</div>
+          </div>
+        </div>
+
+        <sc-if value="{{cur.clear}}" hint-placeholder-val="{{ false }}">
+          <div style="flex-shrink: 0; display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: #EAF6EF; border: 1px solid #B9DEC9; border-radius: 6px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="font-size: 14px; color: #14532D"><strong>No findings.</strong> {{cur.clear}}</div>
+              <div style="font-size: 13px; color: #3A424C">{{cur.source}}</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- Filters -->
+        <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+            <span style="font-size: 13px; font-weight: 600; margin-right: 4px">Checks</span>
+            <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+              <button aria-pressed="{{f.pressed}}" onClick="{{f.pick}}" style="{{f.style}}">
+                <sc-if value="{{f.isIssue}}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6M15 9l-6 6"></path></svg>
+                </sc-if>
+                <sc-if value="{{f.isWarn}}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B47B00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 2.5 20h19zM12 10v4M12 17h.01"></path></svg>
+                </sc-if>
+                <sc-if value="{{f.isPass}}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+                </sc-if>
+                {{f.label}}
+              </button>
+            </sc-for>
+          </div>
+          <label style="display: flex; align-items: center; gap: 8px; width: 240px; height: 36px; box-sizing: border-box; border: 1px solid #D5DAE1; border-radius: 4px; padding: 0 12px; background: #FFFFFF; color: #5F6B7A">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            <input aria-label="Search checks" placeholder="Search" style="flex-grow: 1; min-width: 0; border: none; outline: none; font-family: inherit; font-size: 13px; background: transparent">
+          </label>
+        </div>
+
+        <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
+          <div style="flex-shrink: 0; padding: 20px; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 6px; font-size: 14px; color: #3A424C">Nothing of this kind for this check.</div>
+        </sc-if>
+
+        <!-- Groups and rows -->
+        <sc-for list="{{cur.groups}}" as="g" hint-placeholder-count="2">
+          <section style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px">
+            <h3 style="margin: 6px 0 2px 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1F2933">{{g.label}}</h3>
+
+            <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
+              <article style="{{r.cardStyle}}">
+                <button aria-expanded="{{r.expanded}}" onClick="{{r.toggle}}" style="width: 100%; min-height: 60px; border: none; background: transparent; padding: 10px 20px; display: flex; align-items: center; gap: 14px; text-align: left; cursor: pointer; color: #1F2933">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A424C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{r.chevron}}"></path></svg>
+                  <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase">{{r.title}}</span>
+                  <sc-if value="{{r.constructed}}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 11px; font-weight: 600; color: #4A5361; background: #EEF1F5; border: 1px dashed #AEB6C2; border-radius: 4px; padding: 2px 7px">Constructed example</span>
+                  </sc-if>
+                  <span style="flex-grow: 1"></span>
+                  <span style="{{r.pillStyle}}">{{r.pillLabel}}</span>
+                  <sc-if value="{{r.isIssue}}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" aria-label="Issue" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6M15 9l-6 6"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{r.isWarn}}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B47B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Warning" style="flex-shrink: 0"><path d="M12 4 2.5 20h19zM12 10v4M12 17h.01"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{r.isPass}}" hint-placeholder-val="{{ true }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7F4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Passed" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{r.isCleared}}" hint-placeholder-val="{{ false }}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6B7A" stroke-width="2" stroke-linecap="round" aria-label="Unflagged" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path></svg>
+                  </sc-if>
+                </button>
+
+                <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 2px 20px 18px 50px; display: flex; flex-direction: column; gap: 12px">
+
+                    <sc-if value="{{r.isThree}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-direction: column; gap: 10px">
+                        <div style="font-size: 14px; color: #3A424C">{{r.intro}}</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+                          <sc-for list="{{r.places}}" as="p" hint-placeholder-count="3">
+                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: #F4F6F9; border: 1px solid #E0E4EA; border-radius: 8px">
+                              <div style="font-size: 13px; font-weight: 700">{{p.where}}</div>
+                              <sc-if value="{{p.isText}}" hint-placeholder-val="{{ true }}">
+                                <p style="margin: 0; font-size: 14px; line-height: 1.55">{{p.pre}}<mark style="{{p.markStyle}}">{{p.val}}</mark>{{p.post}}</p>
+                              </sc-if>
+                              <sc-if value="{{p.isTable}}" hint-placeholder-val="{{ false }}">
+                                <div role="table" aria-label="{{p.where}}" style="display: flex; flex-direction: column; font-size: 14px">
+                                  <div role="row" style="display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 0 0 6px 0; border-bottom: 1px solid #D5DAE1; font-size: 12px; font-weight: 600; color: #3A424C">
+                                    <span role="columnheader">{{p.cols.a}}</span><span role="columnheader">{{p.cols.b}}</span><span role="columnheader">{{p.cols.c}}</span>
+                                  </div>
+                                  <sc-for list="{{p.rows}}" as="tr" hint-placeholder-count="3">
+                                    <div role="row" style="display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 6px 0; border-bottom: 1px solid #E8EBF0">
+                                      <span role="cell">{{tr.a}}</span><span role="cell">{{tr.b}}</span><span role="cell"><span style="{{tr.cStyle}}">{{tr.c}}</span></span>
+                                    </div>
+                                  </sc-for>
+                                </div>
+                              </sc-if>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{r.isList}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-direction: column; border: 1px solid #E0E4EA; border-radius: 8px; background: #F4F6F9">
+                        <sc-for list="{{r.places}}" as="p" hint-placeholder-count="3">
+                          <div style="display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 14px; padding: 10px 14px; border-bottom: 1px solid #E8EBF0">
+                            <div style="font-size: 13px; font-weight: 700">{{p.where}}</div>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.55">{{p.pre}}<mark style="{{p.markStyle}}">{{p.val}}</mark>{{p.post}}</p>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{r.hasSummary}}" hint-placeholder-val="{{ false }}">
+                      <div style="{{r.summaryStyle}}"><strong>{{r.lead}}</strong> {{r.summary}}</div>
+                    </sc-if>
+
+                    <sc-if value="{{r.note}}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size: 14px; line-height: 1.5; color: #3A424C">{{r.note}}</div>
+                    </sc-if>
+
+                    <sc-if value="{{r.why}}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size: 13px; line-height: 1.5; color: #3A424C"><strong>Why it matters:</strong> {{r.why}}</div>
+                    </sc-if>
+
+
+                  </div>
+                </sc-if>
+              </article>
+            </sc-for>
+          </section>
+        </sc-for>
+
+      </div>
+    </div>
+  </section>
+
+  </sc-if>
+
+  <!-- Footer -->
+  <footer style="height: 64px; flex-shrink: 0; margin: 12px 24px 12px 24px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E4E7EC; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <button aria-label="Previous step" onClick="{{goBack}}" style="{{backStyle}}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>
+      </button>
+      <span style="width: 1px; height: 28px; background: #D5DAE1"></span>
+      <button aria-label="Flag manuscript" style="width: 36px; height: 36px; border: 1px solid #E4E7EC; background: #FFFFFF; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5F6B7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4h11l-2 4 2 4H6"></path></svg>
+      </button>
+      <button aria-label="Add note" style="width: 36px; height: 36px; border: 1px solid #E4E7EC; background: #FFFFFF; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5F6B7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h12M4 12h7M4 17h5M14 19l1-4 5-5 3 3-5 5z"></path></svg>
+      </button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px">
+      <sc-if value="{{isContent}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; color: #3A424C">{{footerNote}}</span>
+      </sc-if>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button aria-pressed="{{primaryPressed}}" onClick="{{primary}}" style="{{primaryStyle}}">{{primaryLabel}}</button>
+        <button aria-label="Next step" onClick="{{goNext}}" style="{{nextStyle}}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startScreen": {"editor": "enum", "options": ["My Tasks", "Authorship Verification", "Citation Integrity", "Content Integrity"], "default": "Content Integrity", "section": "States"}, "startCheck": {"editor": "enum", "options": ["Templated Content", "Tortured Phrases", "LLM Content Traces", "Consistency"], "default": "Consistency", "section": "States"}, "$preview": {"width": 1440, "height": 900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { screen: null, menuOpen: false, author: 0, citeShown: false, cite: { 3: 'keep', 8: 'keep', 9: 'keep', 10: 'keep', 11: 'keep', 12: 'keep', 13: 'keep' }, sel: null, open: { c1: true, l1: true }, unflag: {}, filter: 'all', confirmed: false };
+  }
+
+  checks() {
+    const HIT = 'background: #FFE58A; color: #1F2933; border-radius: 3px; padding: 0 3px';
+    const BAD = 'background: #FDE3E1; color: #A1180F; font-weight: 700; border-radius: 3px; padding: 0 3px';
+    const t = (where, pre, val, post, bad) => ({ where, pre, val: val || '', post: post || '', isText: true, isTable: false, markStyle: val ? (bad ? BAD : HIT) : 'display: none' });
+    const same = 'benzamide (2a) with benzyl alcohol (3a)';
+
+    return [
+      {
+        key: 'templated', name: 'Templated Content', icon: 'M8 8h11v11H8zM16 8V5H5v11h3',
+        desc: 'Looks for fill-in-the-blank writing: titles, sentences and section layouts reused across unrelated submissions, a common sign of paper-mill output.',
+        demo: false,
+        clear: 'Nothing in this manuscript matched a known template.',
+        source: '[Template library: source and size to be confirmed]',
+        groups: [{ label: 'What was checked', rows: [
+          { id: 't1', kind: 'pass', title: 'Title pattern', pill: 'No match', note: 'The title does not follow a known templated title pattern.' },
+          { id: 't2', kind: 'pass', title: 'Sentence skeletons', pill: 'No match', note: 'No runs of sentences that differ from other submissions only in the terms swapped in.' },
+          { id: 't3', kind: 'pass', title: 'Section and figure layout', pill: 'No match', note: 'The order of sections, tables and schemes does not match a known template.' }
+        ] }]
+      },
+      {
+        key: 'tortured', name: 'Tortured Phrases', icon: 'M5 7V5h14v2M12 5v14M9 19h6M4 12h16',
+        desc: 'Looks for odd rewordings of standard terms. Paraphrasing tools produce them when they are used to disguise copied text.',
+        demo: false,
+        clear: 'No phrase in the text or captions matched the list of known tortured phrases.',
+        source: '[Phrase list: source and version to be confirmed]',
+        groups: [{ label: 'What was checked', rows: [
+          { id: 'p1', kind: 'pass', title: 'Known tortured phrases', pill: 'No match', note: 'The text and captions were compared with the phrase list. An example of what this check flags: \u201ckidney disappointment\u201d in place of \u201ckidney failure\u201d.' },
+          { id: 'p2', kind: 'pass', title: 'Standard terms of the field', pill: 'As expected', note: 'Established terms appear in their usual form.', layout: 'list', places: [
+            t('Introduction', '\u2026the hydroxyl group of alcohols is a poor ', 'leaving group', '.'),
+            t('Introduction', '\u2026requires the use of ', 'transition-metal catalysts', '.'),
+            t('Introduction', '\u2026the use of alcohols as ', 'alkylating agents', ' for N-alkylation of amines and amides\u2026')
+          ] }
+        ] }]
+      },
+      {
+        key: 'llm', name: 'LLM Content Traces', icon: 'M4 5h16v11H9l-5 4z',
+        desc: 'Looks for chatbot text left in the manuscript by mistake, such as reply openers and interface labels. It does not estimate how much of the text was written with AI.',
+        demo: true, clear: false, source: '',
+        groups: [
+          { label: 'Traces in the text', rows: [
+            { id: 'l1', kind: 'issue', constructed: true, title: 'Assistant reply left in text', pill: '1 trace in Introduction', layout: 'list', places: [
+              t('Introduction', '', 'Certainly, here is a more concise version of the paragraph:', ' To overcome these limitations, the use of alcohols as alkylating agents for N-alkylation of amines and amides has emerged as a more sustainable alternative.', true)
+            ], lead: 'Trace found.', summary: 'The highlighted sentence is addressed to the person prompting a chatbot, not to a reader of the paper.',
+              why: 'A trace shows that pasted chatbot output was not fully edited. It does not show how much of the manuscript was AI-assisted, or whether the science is affected.',
+              ask: 'Please remove the highlighted sentence and describe any use of AI tools in preparing the manuscript.' },
+            { id: 'l2', kind: 'pass', title: 'Interface labels', pill: 'None found', note: 'Looked for labels copied from a chatbot interface, such as \u201cRegenerate response\u201d.' },
+            { id: 'l3', kind: 'pass', title: 'Self-reference phrases', pill: 'None found', note: 'Looked for phrases such as \u201cAs an AI language model\u201d.' }
+          ] },
+          { label: 'Disclosure', rows: [
+            { id: 'l4', kind: 'warn', constructed: true, title: 'AI-use declaration', pill: 'Not found', lead: 'No declaration found.', summary: 'The manuscript has no statement on the use of AI tools. [Journal AI policy: is a declaration required?]',
+              why: 'With a trace in the text, the journal\u2019s disclosure policy decides the next step.',
+              ask: 'Please add a statement on the use of AI tools, in line with the journal\u2019s policy.' }
+          ] }
+        ]
+      },
+      {
+        key: 'consistency', name: 'Consistency', icon: 'M7 4 3 8l4 4M3 8h18M17 12l4 4-4 4M21 16H3',
+        desc: 'Reads the same value wherever it appears (abstract, text, tables, captions) and compares them. Also checks that tables, schemes and charts are numbered in order.',
+        demo: true, clear: false, source: '',
+        groups: [
+          { label: 'Values across sections', rows: [
+            { id: 'c1', kind: 'issue', constructed: true, title: 'Conversion at 1.5 mol% catalyst', pill: 'Mismatch in 1 of 3 places', layout: 'three',
+              intro: 'One value, three places.',
+              places: [
+                t('Results and discussion', 'Increasing the catalyst loading to 1.5 mol% markedly improved the conversion (', '95%', ') (Entry 3, Table 1).'),
+                { where: 'Table 1', isText: false, isTable: true, cols: { a: 'Entry', b: '1 (mol%)', c: 'Yield (%)' }, rows: [
+                  { a: '1', b: '1.0', c: '67', cStyle: '' },
+                  { a: '2', b: '0.5', c: '20', cStyle: '' },
+                  { a: '3', b: '1.5', c: '59', cStyle: BAD }
+                ] },
+                t('Conclusion', 'With 1.5 mol% of 1, N-benzylbenzamide (4a) was obtained in ', '95%', ' conversion.')
+              ],
+              lead: 'Mismatch found.', summary: 'Conversion at 1.5 mol% of 1 is 95% in the Results text and the Conclusion, and 59% in Table 1. Entries 1 and 2 agree between the text and the table.',
+              why: 'This is the best result in the catalyst-loading screen, and a reader cannot tell which value is correct.',
+              ask: 'Please confirm the value for Entry 3 of Table 1 and correct the text or the table.' },
+            { id: 'c2', kind: 'warn', title: 'Yield or conversion', pill: '2 terms for one table', layout: 'list', places: [
+              t('Results, Entry 1', '\u2026afforded N-benzylbenzamide (4a) in 67% ', 'yield', ' (Entry 1, Table 1).'),
+              t('Results, Entry 2', '\u2026resulted in a significant decrease in ', 'yield', ' to 20% (Entry 2, Table 1).'),
+              t('Results, Entry 3', '\u2026markedly improved the ', 'conversion', ' (95%) (Entry 3, Table 1).', true),
+              t('Abstract', '\u2026in toluene at 120 \u00b0C with very good to excellent ', 'conversions', '.', true)
+            ], lead: 'Terms differ.', summary: 'Entries 1 and 2 of Table 1 are reported as yield, and Entry 3 as conversion. The abstract reports conversions.',
+              why: 'Yield and conversion measure different things, so the three entries may not be comparable as written.',
+              ask: 'Please state whether the values in Table 1 are yields or conversions, and use one term throughout.' },
+            { id: 'c3', kind: 'pass', title: 'Solvent', pill: 'Consistent in 2 places', layout: 'list', places: [
+              t('Abstract', '\u2026in the presence of Cs\u2082CO\u2083 in ', 'toluene', ' at 120 \u00b0C\u2026'),
+              t('Results and discussion', '\u2026in the presence of 1 mol% of 1 in ', 'toluene', ' for 16 h\u2026')
+            ] },
+            { id: 'c4', kind: 'pass', title: 'Compound numbering', pill: 'Consistent in 4 places', layout: 'list', places: [
+              t('Results and discussion', 'The reaction between ', 'benzamide (2a) and benzyl alcohol (3a)', ' was chosen as a model reaction.'),
+              t('Table caption (solvent)', 'Effect of solvent on 1 catalyzed reaction of ', same, ''),
+              t('Table caption (base)', 'Effect of base on 1 catalyzed reaction of ', same, ''),
+              t('Table 4 caption', 'N-Alkylation of ', 'benzamides (2) with alcohols (3)', ' catalysed by 1')
+            ] }
+          ] },
+          { label: 'Tables, schemes and charts', rows: [
+            { id: 'c5', kind: 'warn', title: 'Table numbering', pill: 'Table 2 used twice', layout: 'list', places: [
+              t('1st table', 'Table 1, cited in the text for Entries 1 to 3', '', ''),
+              t('2nd table', '', 'Table 2', ' Effect of solvent on 1 catalyzed reaction of ' + same),
+              t('3rd table', '', 'Table 2', ' Effect of base on 1 catalyzed reaction of ' + same, true),
+              t('4th table', 'Table 4 N-Alkylation of benzamides (2) with alcohols (3) catalysed by 1', '', '')
+            ], lead: 'Numbering repeats.', summary: 'Two tables are labelled Table 2 and none is labelled Table 3. The second Table 2 is likely Table 3.',
+              why: 'A reference to Table 2 in the text could point to either table.',
+              ask: 'Please renumber the tables and check the references to them in the text.' },
+            { id: 'c6', kind: 'pass', title: 'Scheme and chart numbering', pill: 'In order', note: 'Chart 1 and Schemes 1 to 4 are numbered in sequence.' }
+          ] }
+        ]
+      }
+    ];
+  }
+
+  contentVals() {
+    const s = this.state;
+    const START = { 'Templated Content': 'templated', 'Tortured Phrases': 'tortured', 'LLM Content Traces': 'llm', 'Consistency': 'consistency' };
+    const sel = s.sel || START[this.props.startCheck ?? 'Consistency'] || 'consistency';
+    const all = this.checks();
+
+    const PILL_BASE = 'flex-shrink: 0; font-size: 13px; font-weight: 500; border-radius: 4px; padding: 5px 10px; white-space: nowrap; ';
+    const PILL = {
+      issue: PILL_BASE + 'background: #FDECEA; border: 1px solid #F0B0A8; color: #A1180F',
+      warn: PILL_BASE + 'background: #FFF8E1; border: 1px solid #E5B54A; color: #6B4100',
+      pass: PILL_BASE + 'background: #EAF6EF; border: 1px solid #B9DEC9; color: #14532D',
+      cleared: PILL_BASE + 'background: #EEF1F5; border: 1px solid #C9CED6; color: #3A424C'
+    };
+    const SUM_BASE = 'padding: 11px 14px; border-radius: 6px; font-size: 14px; line-height: 1.5; ';
+    const SUM = {
+      issue: SUM_BASE + 'background: #FFF5E0; border: 1px solid #C98A1B; color: #1F2933',
+      warn: SUM_BASE + 'background: #FFF8E1; border: 1px solid #E5B54A; color: #1F2933'
+    };
+
+    const flaggedOf = (c) => c.groups.reduce((n, g) => n + g.rows.filter((r) => r.kind !== 'pass' && !s.unflag[r.id]).length, 0);
+    const countOf = (c, kind) => c.groups.reduce((n, g) => n + g.rows.filter((r) => r.kind === kind).length, 0);
+
+    const nav = all.map((c) => {
+      const on = c.key === sel;
+      const n = flaggedOf(c);
+      return {
+        name: c.name, icon: c.icon,
+        pressed: on ? 'true' : 'false',
+        pick: () => this.setState({ sel: c.key, filter: 'all' }),
+        hasCount: n > 0, count: String(n), countLabel: n + (n === 1 ? ' finding' : ' findings'),
+        isClear: n === 0,
+        style: 'width: 100%; min-height: 44px; border: none; border-radius: 4px; padding: 0 10px 0 12px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; font-weight: ' + (on ? '600' : '400') + '; color: ' + (on ? '#1B2F9A' : '#1F2933') + '; background: ' + (on ? '#EEF2FE' : 'transparent')
+      };
+    });
+
+    const c = all.find((x) => x.key === sel) || all[3];
+    const groups = c.groups.map((g) => ({
+      label: g.label,
+      rows: g.rows.filter((r) => s.filter === 'all' || r.kind === s.filter).map((r) => {
+        const finding = r.kind !== 'pass';
+        const cleared = finding && !!s.unflag[r.id];
+        const open = !!s.open[r.id];
+        const tone = cleared ? 'cleared' : r.kind;
+        const hasPlaces = !!r.places;
+        return Object.assign({ constructed: false, places: false, intro: '', lead: '', summary: '', why: '', ask: '', note: '' }, r, {
+          finding, open,
+          expanded: open ? 'true' : 'false',
+          chevron: open ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6',
+          toggle: () => this.setState({ open: Object.assign({}, s.open, { [r.id]: !open }) }),
+          pillLabel: cleared ? 'Unflagged' : r.pill,
+          pillStyle: PILL[tone],
+          isIssue: tone === 'issue', isWarn: tone === 'warn', isPass: tone === 'pass', isCleared: cleared,
+          isThree: hasPlaces && r.layout === 'three',
+          isList: hasPlaces && r.layout !== 'three',
+          hasSummary: !!r.summary,
+          summaryStyle: SUM[r.kind] || SUM.warn,
+          flagPressed: cleared ? 'true' : 'false',
+          flagLabel: cleared ? 'Flag again' : 'Unflag',
+          flagHint: cleared ? 'Removed from the author query. Kept in the audit trail.' : 'Flagged findings are added to the author query.',
+          toggleFlag: () => this.setState({ unflag: Object.assign({}, s.unflag, { [r.id]: !cleared }), confirmed: false }),
+          cardStyle: 'background: #FFFFFF; border-radius: 4px; border: 1px solid ' + (open && finding && !cleared ? '#9DB2F5' : '#E4E7EC')
+        });
+      })
+    })).filter((g) => g.rows.length > 0);
+
+    const nIssue = countOf(c, 'issue'), nWarn = countOf(c, 'warn'), nPass = countOf(c, 'pass');
+    const filters = [
+      { key: 'all', label: 'All' },
+      { key: 'issue', label: nIssue + (nIssue === 1 ? ' Issue' : ' Issues') },
+      { key: 'warn', label: nWarn + (nWarn === 1 ? ' Warning' : ' Warnings') },
+      { key: 'pass', label: nPass + ' Passed' }
+    ].map((f) => {
+      const on = s.filter === f.key;
+      return Object.assign({}, f, {
+        pressed: on ? 'true' : 'false',
+        isIssue: f.key === 'issue', isWarn: f.key === 'warn', isPass: f.key === 'pass',
+        pick: () => this.setState({ filter: f.key }),
+        style: 'min-height: 36px; border-radius: 999px; padding: 0 14px; display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; font-weight: ' + (on ? '600' : '400') + '; color: ' + (on ? '#1B2F9A' : '#1F2933') + '; background: ' + (on ? '#EEF2FE' : '#FFFFFF') + '; border: 1px solid ' + (on ? '#9DB2F5' : '#D5DAE1')
+      });
+    });
+
+    const withFindings = all.filter((x) => flaggedOf(x) > 0).length;
+    const total = all.reduce((n, x) => n + flaggedOf(x), 0);
+    const allClear = withFindings === 0;
+    const STATUS_BASE = 'display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; border-radius: 4px; padding: 3px 9px; ';
+
+    return {
+      nav, filters,
+      cur: { name: c.name, icon: c.icon, desc: c.desc, demo: c.demo, clear: c.clear, source: c.source, groups, empty: groups.length === 0 },
+      allClear,
+      statusLabel: allClear ? 'All clear' : withFindings + ' of 4 checks have findings',
+      statusStyle: STATUS_BASE + (allClear ? 'background: #EAF6EF; color: #14532D' : 'background: #FFF8E1; border: 1px solid #E5B54A; color: #6B4100'),
+      footerNote: s.confirmed
+        ? 'Content Integrity confirmed. ' + (total ? total + (total === 1 ? ' finding goes' : ' findings go') + ' to the author query.' : 'No findings flagged.')
+        : (total ? total + (total === 1 ? ' finding' : ' findings') + ' flagged for the author query' : 'No findings flagged'),
+      confirmPressed: s.confirmed ? 'true' : 'false',
+      confirmLabel: s.confirmed ? 'Confirmed' : 'Confirm',
+      confirm: () => this.setState({ confirmed: !s.confirmed }),
+      confirmStyle: 'min-height: 36px; border-radius: 4px; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #2440C4; ' + (s.confirmed ? 'background: #2440C4; color: #FFFFFF' : 'background: #FFFFFF; color: #2440C4')
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const cv = this.contentVals();
+    const START = { 'My Tasks': 'tasks', 'Authorship Verification': 'auth', 'Citation Integrity': 'cite', 'Content Integrity': 'content' };
+    const screen = s.screen || START[this.props.startScreen ?? 'Content Integrity'] || 'tasks';
+    const ORDER = ['auth', 'cite', 'content'];
+    const LABEL = { auth: '1. Authorship Verification', cite: '2. Citation Integrity', content: '3. Content Integrity' };
+    const idx = ORDER.indexOf(screen);
+    const go = (k) => () => this.setState({ screen: k, menuOpen: false });
+    const isContent = screen === 'content';
+    const hasPrev = idx > 0, hasNext = idx >= 0 && idx < ORDER.length - 1;
+
+    const steps = ORDER.map((k) => ({
+      label: LABEL[k], pick: go(k),
+      style: 'min-height: 40px; border: none; border-radius: 4px; padding: 0 12px; text-align: left; font-size: 13px; cursor: pointer; font-weight: ' + (k === screen ? '600' : '400') + '; color: ' + (k === screen ? '#2A2FA8' : '#1F2933') + '; background: ' + (k === screen ? '#EEF2FE' : '#FFFFFF')
+    }));
+
+    const NAMES = ['Ankit Yadav', 'Jin Kun Cha'];
+    const authors = NAMES.map((name, i) => ({
+      name, pressed: i === s.author ? 'true' : 'false',
+      pick: () => this.setState({ author: i }),
+      style: 'flex-grow: 1; min-width: 0; min-height: 32px; border: none; border-radius: 4px; padding: 0 8px; display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; font-weight: ' + (i === s.author ? '600' : '400') + '; color: ' + (i === s.author ? '#1B2F9A' : '#1F2933') + '; background: ' + (i === s.author ? '#EEF2FE' : 'transparent')
+    }));
+
+    const A_BASE = 'flex-shrink: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 4px; padding: 5px 9px; white-space: nowrap; ';
+    const A_PILL = {
+      warn: A_BASE + 'background: #FFF8E1; border: 1px solid #F3DFA2; color: #1F2933',
+      pass: A_BASE + 'background: #F1FAF4; border: 1px solid #CFE8D8; color: #14532D; margin-right: 0'
+    };
+    const ar = (title, pill, tone, mark) => ({ title, pill, isWarn: tone === 'warn', isPass: tone === 'pass', ok: mark === 'ok', bad: mark === 'bad', pillStyle: A_PILL[tone] });
+    const authRows = [
+      ar('ORCID MATCH', 'ORCID was not in manuscript', 'warn', 'ok'),
+      ar('EMAIL DOMAIN TYPE', 'Email not found in paper', 'warn', 'ok'),
+      ar('EMAIL VALIDITY', 'Email not found in paper', 'warn', 'ok'),
+      ar('EMAIL AUTHOR NAME MATCHING', 'Email not found in paper', 'warn', 'ok'),
+      ar('INSTITUTION ROR CHECK', 'Institution resolved with a valid ROR ID', 'pass', ''),
+      ar('INSTITUTION RETRACTION HISTORY', 'Retraction rate within normal range', 'pass', ''),
+      ar('INSTITUTION COLLABORATION HISTORY', 'No prior co-publication history found with co-authors\u2019 institutions', 'warn', 'bad'),
+      ar('ORCID AFFILIATION CONSISTENCY', 'Insufficient data or ORCID not available/confirmed', 'warn', 'ok'),
+      ar('INSTITUTION EXPERTISE REPUTATION', 'Could not determine', 'warn', 'bad'),
+      ar('INSTITUTION RINGGOLD CHECK', 'Ringgold ID lookup not available', 'warn', 'ok')
+    ];
+
+    const C_BASE = 'display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; border-radius: 4px; padding: 3px 7px; ';
+    const GOOD = C_BASE + 'color: #14532D; background: #F1FAF4; border: 1px solid #CFE8D8';
+    const GREY = C_BASE + 'color: #4A5361; background: #F1F3F6; border: 1px solid #DDE1E7';
+    const TICK = 'm8 12 3 3 5-6';
+    const good = (label) => ({ label, style: GOOD, tick: TICK });
+    const grey = (label) => ({ label, style: GREY, tick: '' });
+    const TITLES = { 1: 'A novel tropoloisoquinoline alkaloid, neotatarine, from Acorus calamus L.', 3: 'Colchicine alkaloids and synthetic analogues: Current progress and persp\u2026' };
+    const AGE = { 1: '9 yrs', 3: '6 yrs' };
+    const SRC = { 1: 'crossref', 3: 'pubmed' };
+    const B_BASE = 'min-height: 30px; border-radius: 4px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; ';
+    const B_OFF = B_BASE + 'background: #FFFFFF; border: 1px solid #D5DAE1; color: #1F2933';
+    const refs = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => {
+      const st = s.cite[n] || null;
+      const set = (v) => () => this.setState({ cite: Object.assign({}, s.cite, { [n]: st === v ? null : v }) });
+      return {
+        label: '[' + n + ']' + (TITLES[n] ? ' ' + TITLES[n] : ''),
+        cells: [good('relevant'), AGE[n] ? good(AGE[n]) : grey('Unknown'), good('No'), good('No'), good('No'), good('None'), SRC[n] ? good(SRC[n]) : grey('Not available')],
+        keepPressed: st === 'keep' ? 'true' : 'false', keep: set('keep'),
+        keepStyle: st === 'keep' ? B_BASE + 'background: #F1FAF4; border: 1px solid #1B7F4B; color: #14532D; font-weight: 600' : B_OFF,
+        flagPressed: st === 'flag' ? 'true' : 'false', flag: set('flag'),
+        flagStyle: st === 'flag' ? B_BASE + 'background: #FFF8E1; border: 1px solid #B47B00; color: #6B4100; font-weight: 600' : B_OFF
+      };
+    });
+
+    const OUTLINE = 'min-height: 36px; border-radius: 4px; padding: 0 12px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #2440C4; background: #FFFFFF; color: #2440C4';
+    const SQ = 'height: 36px; background: #FFFFFF; border-radius: 4px; display: flex; align-items: center; justify-content: center; ';
+
+    return Object.assign({}, cv, {
+      isTasks: screen === 'tasks', isStep: idx >= 0,
+      isAuth: screen === 'auth', isCite: screen === 'cite', isContent,
+      startReview: go('auth'), goTasks: go('tasks'),
+      stepLabel: LABEL[screen] || '',
+      menuOpen: s.menuOpen, menuExpanded: s.menuOpen ? 'true' : 'false',
+      toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
+      steps, authors, authRows,
+      author: { name: NAMES[s.author], hasData: s.author === 0, noData: s.author !== 0 },
+      citeShown: s.citeShown, citeEmpty: !s.citeShown, citePressed: s.citeShown ? 'true' : 'false',
+      toggleCite: () => this.setState({ citeShown: !s.citeShown }),
+      citeViewing: 'You are viewing ' + (s.citeShown ? '17' : '0') + ' out of 19 reports',
+      refs,
+      goBack: hasPrev ? go(ORDER[idx - 1]) : () => {},
+      backStyle: SQ + 'width: 36px; border: 1px solid ' + (hasPrev ? '#C2C9D3' : '#E4E7EC') + '; color: ' + (hasPrev ? '#1F2933' : '#9AA1AB') + '; cursor: ' + (hasPrev ? 'pointer' : 'default'),
+      goNext: hasNext ? go(ORDER[idx + 1]) : () => {},
+      nextStyle: SQ + 'width: 28px; border: 1px solid ' + (hasNext ? '#C2C9D3' : '#E4E7EC') + '; color: ' + (hasNext ? '#1F2933' : '#9AA1AB') + '; cursor: ' + (hasNext ? 'pointer' : 'default'),
+      primary: isContent ? cv.confirm : (hasNext ? go(ORDER[idx + 1]) : () => {}),
+      primaryLabel: isContent ? cv.confirmLabel : 'Confirm & Next',
+      primaryPressed: isContent ? cv.confirmPressed : 'false',
+      primaryStyle: isContent ? cv.confirmStyle : OUTLINE
+    });
+  }
+}
+</script>
+<script>
+(function(){function f(){var z=Math.min(1.8,Math.max(.7,Math.min(innerWidth/1440,innerHeight/860)));document.documentElement.style.setProperty('--z',z)}f();addEventListener('resize',f)})();
+</script>
+</body>
+</html>
